@@ -1,0 +1,222 @@
+using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Text;
+using System.Text.Json;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Telefin.Common.Models;
+
+namespace Telefin.Helper
+{
+    public class TelegramSender
+    {
+        private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
+
+        private readonly HttpClient _httpClient;
+        private readonly ILogger<Plugin> _logger;
+
+        public TelegramSender(HttpClient httpClient, ILogger<Plugin> logger)
+        {
+            _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        }
+
+        //TODO: Both send methods will fail if the message is too long. Telegram has a limit of 4096 characters per message and 1024 for captions.
+
+        public async Task<bool> SendMessageAsync(string notificationType, string message, string botToken, string chatId, bool isSilentNotification, string threadId)
+        {
+            try
+            {
+                var endpoint = BuildBotUrl(botToken, "sendMessage");
+
+                var parameters = new Dictionary<string, string>
+                {
+                    { "chat_id", chatId },
+                    { "text", message },
+                    { "parse_mode", "HTML" }
+                };
+
+                if (isSilentNotification)
+                {
+                    parameters.Add("disable_notification", "true");
+                }
+
+                if (SanitizeThreadId(threadId, out var sanitizedThreadId))
+                {
+                    parameters.Add("message_thread_id", sanitizedThreadId);
+                }
+
+                return await PostFormAsync(notificationType, endpoint, parameters).ConfigureAwait(false);
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogError(ex, "{PluginName}({NotificationType}): Invalid bot token provided.", typeof(Plugin).Name, notificationType);
+                return false;
+            }
+        }
+
+        public async Task<bool> SendMessageWithPhotoAsync(string notificationType, string caption, string imageUrl, string botToken, string chatId, bool isSilentNotification, string threadId)
+        {
+            try
+            {
+                var endpoint = BuildBotUrl(botToken, "sendPhoto");
+
+                using var form = new MultipartFormDataContent
+                {
+                    { new StringContent(chatId, Encoding.UTF8), "chat_id" },
+                    { new StringContent(caption ?? string.Empty, Encoding.UTF8), "caption" },
+                    { new StringContent("HTML", Encoding.UTF8), "parse_mode" }
+                };
+
+                if (isSilentNotification)
+                {
+                    form.Add(new StringContent("true", Encoding.UTF8), "disable_notification");
+                }
+
+                if (SanitizeThreadId(threadId, out var sanitizedThreadId))
+                {
+                    form.Add(new StringContent(sanitizedThreadId, Encoding.UTF8), "message_thread_id");
+                }
+
+                // Fetch image
+                try
+                {
+                    _logger.LogInformation("{PluginName}({NotificationType}): Fetching image: {Url}", typeof(Plugin).Name, notificationType, imageUrl);
+
+                    using var imageResponse = await _httpClient.GetAsync(imageUrl).ConfigureAwait(false);
+                    var imageBytes = await imageResponse.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
+
+                    if (!imageResponse.IsSuccessStatusCode || imageBytes.Length == 0)
+                    {
+                        _logger.LogError("{PluginName}({NotificationType}): Failed to fetch image. HTTP {StatusCode}", typeof(Plugin).Name, notificationType, (int)imageResponse.StatusCode);
+                        return false;
+                    }
+
+                    var imageContent = new ByteArrayContent(imageBytes);
+                    // Telegram doesn’t require correct extension, but it helps
+                    form.Add(imageContent, "photo", "image.jpg");
+                }
+                catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+                {
+                    _logger.LogError(ex, "{PluginName}({NotificationType}): Error fetching image: {Url}", typeof(Plugin).Name, notificationType, imageUrl);
+                    return false;
+                }
+
+                return await PostMultipartAsync(notificationType, endpoint, form).ConfigureAwait(false);
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogError(ex, "{PluginName}({NotificationType}): Invalid bot token provided.", typeof(Plugin).Name, notificationType);
+                return false;
+            }
+        }
+
+        private async Task<bool> PostFormAsync(string notificationType, string url, Dictionary<string, string> parameters)
+        {
+            try
+            {
+                using var content = new FormUrlEncodedContent(parameters);
+                using var response = await _httpClient.PostAsync(url, content).ConfigureAwait(false);
+                return await HandleTelegramResponseAsync(notificationType, response).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+            {
+                _logger.LogError(ex, "{PluginName}({NotificationType}): Request failed. Please check configuration and connectivity.", typeof(Plugin).Name, notificationType);
+                return false;
+            }
+        }
+
+        private async Task<bool> PostMultipartAsync(string notificationType, string url, MultipartFormDataContent form)
+        {
+            try
+            {
+                using var response = await _httpClient.PostAsync(url, form).ConfigureAwait(false);
+                return await HandleTelegramResponseAsync(notificationType, response).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+            {
+                _logger.LogError(ex, "{PluginName}({NotificationType}): Request failed. Please check configuration and connectivity.", typeof(Plugin).Name, notificationType);
+                return false;
+            }
+        }
+
+        private async Task<bool> HandleTelegramResponseAsync(string notificationType, HttpResponseMessage response)
+        {
+            var body = string.Empty;
+
+            try
+            {
+                body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+                // Telegram often returns 200 even when ok=false
+                TelegramResponse? parsed = null;
+                if (!string.IsNullOrWhiteSpace(body))
+                {
+                    parsed = JsonSerializer.Deserialize<TelegramResponse>(body, JsonOptions);
+                }
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogError(
+                        "{PluginName}({NotificationType}): Telegram HTTP error {StatusCode}. Body: {Body}",
+                        typeof(Plugin).Name,
+                        notificationType,
+                        (int)response.StatusCode,
+                        body);
+                    return false;
+                }
+
+                if (parsed is not null && parsed.Ok == false)
+                {
+                    _logger.LogError(
+                        "{PluginName}({NotificationType}): Telegram API error {ErrorCode}: {Description}. Body: {Body}",
+                        typeof(Plugin).Name,
+                        notificationType,
+                        parsed.ErrorCode,
+                        parsed.Description,
+                        body);
+
+                    return false;
+                }
+
+                _logger.LogInformation("{PluginName}({NotificationType}): Message sent successfully.", typeof(Plugin).Name, notificationType);
+                return true;
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogError(ex, "{PluginName}({NotificationType}): Could not parse Telegram response. HTTP {StatusCode}. Body: {Body}", typeof(Plugin).Name, notificationType, (int)response.StatusCode, body);
+                return false;
+            }
+        }
+
+        private static string BuildBotUrl(string botToken, string method)
+        {
+            if (string.IsNullOrWhiteSpace(botToken))
+            {
+                throw new ArgumentException("Bot token is required.", nameof(botToken));
+            }
+
+            return $"https://api.telegram.org/bot{botToken}/{method}";
+        }
+
+        // Telegram expects an integer for the thread id. UI stores it as string -> sanitize safely.
+        private static bool SanitizeThreadId(string threadId, out string sanitize)
+        {
+            sanitize = string.Empty;
+
+            if (string.IsNullOrWhiteSpace(threadId))
+            {
+                return false;
+            }
+
+            if (int.TryParse(threadId, out var id) && id > 0)
+            {
+                sanitize = id.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                return true;
+            }
+
+            return false;
+        }
+    }
+}

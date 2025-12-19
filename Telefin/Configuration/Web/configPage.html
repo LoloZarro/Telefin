@@ -1,0 +1,325 @@
+<div id="TelefinConfigPage"
+     data-role="page"
+     class="page type-interior pluginConfigurationPage"
+     data-require="emby-input,emby-button,emby-select,emby-checkbox"
+     data-controller="__plugin/Telefin.js">
+
+    <div data-role="content">
+        <div class="content-primary">
+            <form id="TelefinConfigForm" class="telefin-form">
+
+                <!-- Header -->
+                <header class="sectionTitleContainer flex align-items-center" style="margin-bottom:1.5em;">
+                    <div>
+                        <h1 style="margin:0;">Telefin - Telegram Notifications</h1>
+                        <div class="label" style="margin-top:.4em;">
+                            Send Telegram notifications for Jellyfin events.
+                            Docs & examples on
+                            <a href="https://github.com/LoloZarro/Telefin" target="_blank" rel="noopener noreferrer">
+                                GitHub
+                            </a>.
+                        </div>
+                    </div>
+                </header>
+
+                <!-- Plugin-wide settings -->
+                <section class="verticalSection">
+                    <div class="sectionTitleContainer flex align-items-center">
+                        <h2 style="margin:0;">Plugin</h2>
+                    </div>
+
+                    <div class="checkboxContainer checkboxContainer-withDescription" style="margin-top:1em;">
+                        <label class="emby-checkbox-label">
+                            <input id="EnablePlugin"
+                                   name="EnablePluginCheckBox"
+                                   type="checkbox"
+                                   is="emby-checkbox" />
+                            <span>Enable Telefin</span>
+                        </label>
+                        <div class="fieldDescription">
+                            Globally enables or disables Telefin for all users.
+                        </div>
+                    </div>
+
+                    <div class="inputContainer" style="margin-top:1em;">
+                        <label class="inputLabel inputLabelUnfocused" for="ServerUrl">Server URL</label>
+                        <input id="ServerUrl" name="ServerUrl" type="text" is="emby-input" />
+                        <div class="fieldDescription">
+                            Base URL of this Jellyfin server
+                            (e.g. <code>http://localhost:8096</code>,
+                            <code>https://jellyfin.example.com</code>).
+                        </div>
+                        <div class="fieldDescription">
+                            Used to fetch media images for notifications.
+                            If no scheme is provided, <strong>http</strong> will be used.
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Per-user configuration selector -->
+                <section class="verticalSection" style="margin-top:2em;">
+                    <div class="sectionTitleContainer flex align-items-center">
+                        <h2 style="margin:0;">Per-user configuration</h2>
+                    </div>
+
+                    <div class="inputContainer" style="margin-top:1em;">
+                        <div class="selectContainer">
+                            <label class="selectLabel" for="userToConfigure">User</label>
+                            <select id="userToConfigure"
+                                    name="userToConfigure"
+                                    class="emby-select-withcolor emby-select">
+                            </select>
+                            <div class="fieldDescription">
+                                Choose the Jellyfin user to configure Telefin for.
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Telegram bot settings -->
+                <section class="verticalSection" style="margin-top:2em;">
+                    <div class="sectionTitleContainer flex align-items-center">
+                        <h3 style="margin:0;">Telegram bot</h3>
+                    </div>
+
+                    <div class="inputContainer" style="margin-top:1em;">
+                        <label class="inputLabel inputLabelUnfocused" for="BotToken">Bot token</label>
+                        <input id="BotToken" name="BotToken" type="text" is="emby-input" />
+                        <div class="fieldDescription">
+                            Telegram bot token from <code>@BotFather</code>.
+                        </div>
+                    </div>
+
+                    <div class="inputContainer">
+                        <label class="inputLabel inputLabelUnfocused" for="ChatId">Chat ID</label>
+                        <input id="ChatId" name="ChatId" type="text" is="emby-input" />
+                        <div class="fieldDescription">
+                            Target chat ID (user, group, or channel) for notifications.
+                        </div>
+                    </div>
+
+                    <div class="inputContainer">
+                        <label class="inputLabel inputLabelUnfocused" for="ThreadId">Thread ID (optional)</label>
+                        <input id="ThreadId" name="ThreadId" type="text" is="emby-input" />
+                        <div class="fieldDescription">
+                            Only needed if you use topics/threads in groups. Leave empty otherwise.
+                        </div>
+                    </div>
+
+                    <div style="margin-top:1em;">
+                        <button id="testButton"
+                                is="emby-button"
+                                class="raised button block emby-button">
+                            <span>Test bot configuration</span>
+                        </button>
+                        <div class="fieldDescription" style="margin-top:.5em;">
+                            Sends a test message to verify the bot token, chat and thread.
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Basic notification behavior -->
+                <section class="verticalSection" style="margin-top:2em;">
+                    <div class="sectionTitleContainer flex align-items-center">
+                        <h3 style="margin:0;">Notification behavior</h3>
+                    </div>
+
+                    <div class="checkboxContainer checkboxContainer-withDescription" style="margin-top:1em;">
+                        <label class="emby-checkbox-label">
+                            <input id="EnableUser"
+                                   name="EnableUserCheckBox"
+                                   type="checkbox"
+                                   is="emby-checkbox" />
+                            <span>Enable notifications for this user</span>
+                        </label>
+                        <div class="fieldDescription">
+                            Master switch for notifications for the selected user.
+                        </div>
+                    </div>
+
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label class="emby-checkbox-label">
+                            <input id="SilentNotification"
+                                   name="SilentNotificationCheckBox"
+                                   type="checkbox"
+                                   is="emby-checkbox" />
+                            <span>Send notifications silently</span>
+                        </label>
+                        <div class="fieldDescription">
+                            Telegram will deliver notifications without sound.
+                        </div>
+                    </div>
+
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label class="emby-checkbox-label">
+                            <input id="DoNotMentionOwnActivities"
+                                   name="DoNotMentionOwnActivitiesCheckBox"
+                                   type="checkbox"
+                                   is="emby-checkbox" />
+                            <span>Ignore this user's own activity</span>
+                        </label>
+                        <div class="fieldDescription">
+                            Do not notify when the selected user performs the action.
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Notification types + templates -->
+                <section class="verticalSection telefin-notifications">
+                    <div class="sectionTitleContainer flex align-items-center">
+                        <div>
+                            <h3 style="margin:0;">Notifications Events</h3>
+                            <div class="label" style="margin-top:.35em;">
+                                Enable events and optionally customize the message template. Keep <code>{}</code> placeholders.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lightweight CSS just for this block -->
+                    <style>
+                        .telefin-notifications .telefin-list {
+                            margin-top: 1em;
+                            display: flex;
+                            flex-direction: column;
+                            gap: .75em;
+                        }
+
+                        .telefin-notifications .telefin-item {
+                            border-radius: 10px;
+                            background: rgba(255,255,255,.03);
+                            border: 1px solid rgba(255,255,255,.08);
+                            overflow: hidden;
+                        }
+
+                        .telefin-notifications .telefin-itemHeader {
+                            display: flex;
+                            align-items: center;
+                            gap: .75em;
+                            padding: .85em 1em;
+                        }
+
+                            .telefin-notifications .telefin-itemHeader .checkboxContainer {
+                                margin: 0;
+                                flex: 1;
+                            }
+
+                        .telefin-notifications .telefin-actions {
+                            display: flex;
+                            align-items: center;
+                            gap: .5em;
+                            flex-shrink: 0;
+                        }
+
+                        .telefin-notifications .telefin-editor {
+                            padding: 0 1em 1em 1em;
+                            display: none; /* JS toggles textarea; we also keep editor hidden by default */
+                        }
+
+                            .telefin-notifications .telefin-editor textarea {
+                                width: 100%;
+                                min-height: 140px;
+                                resize: vertical;
+                                margin-top: .5em;
+                            }
+
+                        .telefin-notifications .telefin-subtype {
+                            margin-left: 1.25em;
+                            border-left: 2px solid rgba(255,255,255,.10);
+                        }
+
+                            .telefin-notifications .telefin-subtype .telefin-itemHeader {
+                                padding-left: .85em;
+                            }
+
+                        .telefin-notifications .telefin-mutedHint {
+                            padding: 0 1em 1em 1em;
+                            opacity: .8;
+                            font-size: .95em;
+                        }
+
+                        /* Optional: make action buttons less chunky */
+                        .telefin-notifications .telefin-actions .emby-button {
+                            margin: 0;
+                        }
+                    </style>
+
+                    <!-- Templates (same IDs + data-name hooks; cleaner structure) -->
+                    <template id="template-notification-type">
+                        <div class="telefin-item">
+                            <div class="telefin-itemHeader">
+                                <label class="checkboxContainer">
+                                    <input is="emby-checkbox" type="checkbox" data-name="notificationTypeValue" />
+                                    <span data-name="notificationTypeName"></span>
+                                </label>
+
+                                <div class="telefin-actions">
+                                    <button class="edit-template-button raised emby-button" is="emby-button" type="button">
+                                        <span>Customize</span>
+                                    </button>
+                                    <button class="reset-template-button raised emby-button" type="button" style="display:none;">
+                                        <span>Reset</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="telefin-editor">
+                                <div class="telefin-mutedHint">
+                                    Template supports placeholders (e.g. <code>{eventArgs.Argument.Username}</code>).
+                                </div>
+                                <textarea data-name="txtTemplate" style="display:none;"></textarea>
+                            </div>
+                        </div>
+                    </template>
+
+                    <template id="template-notification-type-without-textarea">
+                        <div class="telefin-item">
+                            <div class="telefin-itemHeader">
+                                <label class="checkboxContainer">
+                                    <input is="emby-checkbox" type="checkbox" data-name="notificationTypeValue" />
+                                    <span data-name="notificationTypeName"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </template>
+
+                    <template id="template-notification-subtype">
+                        <div class="telefin-item telefin-subtype">
+                            <div class="telefin-itemHeader">
+                                <label class="checkboxContainer">
+                                    <input is="emby-checkbox" type="checkbox" data-name="notificationSubtypeValue" />
+                                    <span data-name="notificationSubtypeName"></span>
+                                </label>
+
+                                <div class="telefin-actions">
+                                    <button class="edit-template-button raised emby-button" is="emby-button" type="button">
+                                        <span>Customize</span>
+                                    </button>
+                                    <button class="reset-template-button raised emby-button" type="button" style="display:none;">
+                                        <span>Reset</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="telefin-editor">
+                                <textarea data-name="txtTemplate" style="display:none;"></textarea>
+                            </div>
+                        </div>
+                    </template>
+
+                    <div data-name="notificationTypeContainer" class="telefin-list"></div>
+                </section>
+
+                <!-- Save -->
+                <section class="verticalSection" style="margin-top:2em; margin-bottom:2em;">
+                    <button id="saveButton"
+                            is="emby-button"
+                            type="submit"
+                            class="raised block emby-button">
+                        <span>Save</span>
+                    </button>
+                </section>
+
+            </form>
+        </div>
+    </div>
+</div>
