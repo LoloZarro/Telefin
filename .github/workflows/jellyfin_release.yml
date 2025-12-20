@@ -3,7 +3,7 @@ name: Build & Release Telefin Jellyfin Plugin
 on:
   push:
     tags:
-      - "*.*.*.*"      # e.g. 1.0.0.0, 1.2.3.4
+      - "*.*.*.*" # e.g. 1.0.0.0, 1.2.3.4
 
 permissions:
   contents: write
@@ -11,7 +11,7 @@ permissions:
 env:
   PROJECT_PATH: Telefin/Telefin.csproj
   PLUGIN_NAME: Telefin
-  TARGET_ABI: 10.11.0.0                     # Jellyfin ABI version
+  TARGET_ABI: 10.11.0.0 # Jellyfin ABI version
   MANIFEST_FILE: manifest.json
 
 jobs:
@@ -32,33 +32,33 @@ jobs:
         with:
           dotnet-version: "9.0.x"
 
-    - name: Build (Release)
+      - name: Build (Release)
         run: |
-        dotnet restore "$PROJECT_PATH"
-        dotnet build "$PROJECT_PATH" -c Release
-    
-    - name: Create plugin ZIP (only Telefin.* + meta.json + optional assets)
+          dotnet restore "$PROJECT_PATH"
+          dotnet build "$PROJECT_PATH" -c Release
+
+      - name: Create plugin ZIP (only Telefin.* + meta.json + optional assets)
         run: |
-        sudo apt-get update
-        sudo apt-get install -y zip
-        
-        rm -rf package
-        mkdir -p package
-        
-        # Find the build output folder that contains Telefin.dll
-        OUTDIR="$(dirname "$(find . -type f -path "*/bin/Release/*/${PLUGIN_NAME}.dll" | head -n 1)")"
-        echo "Build output dir: $OUTDIR"
-        ls -la "$OUTDIR"
-        
-        # Only copy dll
-        cp "$OUTDIR/${PLUGIN_NAME}.dll" package/
-        
-        # Create zip
-        rm -f "${PLUGIN_NAME}.zip"
-        (cd package && zip -r "../${PLUGIN_NAME}.zip" .)
-        
-        echo "ZIP contents:"
-        unzip -l "${PLUGIN_NAME}.zip"
+          sudo apt-get update
+          sudo apt-get install -y zip
+
+          rm -rf package
+          mkdir -p package
+
+          # Find the build output folder that contains Telefin.dll
+          OUTDIR="$(dirname "$(find . -type f -path "*/bin/Release/*/${PLUGIN_NAME}.dll" | head -n 1)")"
+          echo "Build output dir: $OUTDIR"
+          ls -la "$OUTDIR"
+
+          # Only copy dll
+          cp "$OUTDIR/${PLUGIN_NAME}.dll" package/
+
+          # Create zip
+          rm -f "${PLUGIN_NAME}.zip"
+          (cd package && zip -r "../${PLUGIN_NAME}.zip" .)
+
+          echo "ZIP contents:"
+          unzip -l "${PLUGIN_NAME}.zip"
 
       - name: Generate MD5 checksum
         id: checksum
