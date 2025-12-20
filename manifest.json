@@ -1,13 +1,21 @@
 [
-    {
-        "category": "Administration",
-        "guid": "fd76211d-17e0-4a72-a23f-c6eeb1e48b3a",
-        "name": "Telefin",
-        "owner": "LoloZarro",
-        "overview": "Enable Telegram Notifications for Jellyfin Events!",
-        "description": "This Plugin can be used to configure Telegram Notifications on a per user basis, that allows to receive notification such as when a new item is added to the library or a playback is started and many more.",
-        "imageUrl": "https://raw.githubusercontent.com/LoloZarro/Telefin/main/assets/banner.png",
-        "versions": [
-        ]
-    }
+  {
+    "category": "Administration",
+    "guid": "fd76211d-17e0-4a72-a23f-c6eeb1e48b3a",
+    "name": "Telefin",
+    "owner": "LoloZarro",
+    "overview": "Enable Telegram Notifications for Jellyfin Events!",
+    "description": "This Plugin can be used to configure Telegram Notifications on a per user basis, that allows to receive notification such as when a new item is added to the library or a playback is started and many more.",
+    "imageUrl": "https://raw.githubusercontent.com/LoloZarro/Telefin/main/assets/banner.png",
+    "versions": [
+      {
+        "checksum": "33d393d43a12d73fcacf368bd71a324e",
+        "version": "1.0.0.0",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/LoloZarro/Telefin/releases/download/1.0.0.0/Telefin.zip",
+        "timestamp": "2025-12-20T17:38:47Z",
+        "changelog": "Automated release 1.0.0.0"
+      }
+    ]
+  }
 ]
