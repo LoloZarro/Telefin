@@ -8,14 +8,6 @@
         "description": "This Plugin can be used to configure Telegram Notifications on a per user basis, that allows to receive notification such as when a new item is added to the library or a playback is started and many more.",
         "imageUrl": "https://raw.githubusercontent.com/LoloZarro/Telefin/main/assets/banner.png",
         "versions": [
-            {
-                "checksum": "e9d7ac35efdfdb369f5e0a25d2f53161",
-                "version": "1.0.0.0",
-                "targetAbi": "10.11.0.0",
-                "sourceUrl": "https://github.com/LoloZarro/Telefin/releases/download/1.0.0.0/Telefin.zip",
-                "timestamp": "2025-12-19T00:00:00Z",
-                "changelog": "Initial Release"
-            }
         ]
     }
 ]

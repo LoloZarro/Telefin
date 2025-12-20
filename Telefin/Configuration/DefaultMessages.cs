@@ -2,161 +2,193 @@ namespace Telefin.Configuration
 {
     public static class DefaultMessages
     {
+        // LIBRARY: ITEM ADDED
+
         public static string ItemAddedMovies { get; } =
-            "🎬 {item.Name} ({item.ProductionYear})\n" +
-            "      added to library\n\n" +
-            "📽 {item.Overview}";
+            "🎬 {itemTitle} ({itemYear})\n" +
+            "      has been added to your library\n\n" +
+            "📺 [{mediaType}] {itemGenres}\n" +
+            "🕒 {itemDuration}\n" +
+            "📽 {itemOverview}";
 
         public static string ItemAddedSeries { get; } =
-            "📺 [Serie] {serie.Name} ({item.ProductionYear}) added to library\n\n" +
-            "📽 {item.Overview}";
+            "📺 {itemTitle} ({itemYear})\n" +
+            "      series added to your library\n\n" +
+            "📺 Genres: {itemGenres}\n" +
+            "📽 {itemOverview}";
 
         public static string ItemAddedSeasons { get; } =
-            "📺 {season.Series.Name} ({item.ProductionYear})\n" +
-            "      Season {seasonNumber} added to library\n\n" +
-            "📽 {item.Overview}";
+            "📺 {seriesTitle} ({itemYear})\n" +
+            "      Season {seasonNumber} added to your library\n\n" +
+            "📽 {itemOverview}";
 
         public static string ItemAddedEpisodes { get; } =
-            "📺 {episode.Series.Name} ({item.ProductionYear})\n" +
-            "      S{eSeasonNumber} - E{episodeNumber}\n" +
-            "      '{item.Name}' added to library\n\n" +
-            "📽 {item.Overview}";
+            "📺 {seriesTitle} ({itemYear})\n" +
+            "      S{seasonNumber} · E{episodeNumber}: '{itemTitle}' added to your library\n\n" +
+            "📽 {itemOverview}";
 
         public static string ItemAddedAlbums { get; } =
-            "🎵 [Album] {album.Name} ({item.ProductionYear}) added to library";
+            "🎵 Album {itemTitle} ({itemYear}) added to your library";
 
         public static string ItemAddedSongs { get; } =
-            "🎵 [Audio] {audio.Name} ({item.ProductionYear}) added to library";
+            "🎵 Track {itemTitle} ({itemYear}) added to your library";
 
         public static string ItemAddedBooks { get; } =
-            "📖 [Book] {item.Name} added to library\n\n" +
-            "🖋️ {item.Overview}";
+            "📖 {itemTitle} added to your library\n\n" +
+            "🖋️ {itemOverview}";
+
+        // LIBRARY: ITEM DELETED
 
         public static string ItemDeletedMovies { get; } =
-            "🗑️🎬 {item.Name} ({item.ProductionYear})\n" +
-            "      removed from library\n\n" +
-            "📽 {item.Overview}";
+            "🗑️🎬 {itemTitle} ({itemYear})\n" +
+            "      removed from your library\n\n" +
+            "📽 {itemOverview}";
 
         public static string ItemDeletedSeries { get; } =
-            "🗑️📺 [Serie] {serie.Name} ({item.ProductionYear}) removed from library\n\n" +
-            "📽 {item.Overview}";
+            "🗑️📺 {itemTitle} ({itemYear}) series removed from your library\n\n" +
+            "📽 {itemOverview}";
 
         public static string ItemDeletedSeasons { get; } =
-            "🗑️📺 {season.Series.Name} ({item.ProductionYear})\n" +
-            "      Season {seasonNumber} removed from library\n\n" +
-            "📽 {item.Overview}";
+            "🗑️📺 {seriesTitle} ({itemYear})\n" +
+            "      Season {seasonNumber} removed from your library\n\n" +
+            "📽 {itemOverview}";
 
         public static string ItemDeletedEpisodes { get; } =
-            "🗑️📺 {episode.Series.Name} ({item.ProductionYear})\n" +
-            "      S{eSeasonNumber} - E{episodeNumber}\n" +
-            "      '{item.Name}' removed from library\n\n" +
-            "📽 {item.Overview}";
+            "🗑️📺 {seriesTitle} ({itemYear})\n" +
+            "      S{seasonNumber} · E{episodeNumber}: '{itemTitle}' removed from your library\n\n" +
+            "📽 {itemOverview}";
 
         public static string ItemDeletedAlbums { get; } =
-            "🗑️🎵 [Album] {album.Name} ({item.ProductionYear}) removed from library";
+            "🗑️🎵 Album {itemTitle} ({itemYear}) removed from your library";
 
         public static string ItemDeletedSongs { get; } =
-            "🗑️🎵 [Audio] {audio.Name} ({item.ProductionYear}) removed from library";
+            "🗑️🎵 Track {itemTitle} ({itemYear}) removed from your library";
 
         public static string ItemDeletedBooks { get; } =
-            "🗑️📖 [Book] {item.Name} removed from library\n\n" +
-            "🖋️ {item.Overview}";
+            "🗑️📖 {itemTitle} removed from your library\n\n" +
+            "🖋️ {itemOverview}";
+
+        // AUTHENTICATION
 
         public static string AuthenticationFailure { get; } =
-            "🔒 Authentication failure on {eventArgs.Argument.DeviceName} for user {eventArgs.Argument.Username}";
+            "🔒 Authentication failed on {deviceName} for user {username}";
 
         public static string AuthenticationSuccess { get; } =
-            "🔓 Authentication success for user {eventArgs.Argument.User.Name} on {eventArgs.Argument.SessionInfo.DeviceName}";
+            "🔓 User {username} successfully signed in on {deviceName} (server: {serverName}, last activity: {lastActivity})";
+
+        // SERVER
 
         public static string PendingRestart { get; } =
             "🔄 Jellyfin is pending a restart.";
 
+        // PLAYBACK: PROGRESS
+
         public static string PlaybackProgressMovies { get; } =
-            "👤 {eventArgs.Users[0].Username} is still watching on {eventArgs.DeviceName}:\n" +
-            "🎬 {eventArgs.Item.Name} ({eventArgs.Item.ProductionYear})";
+            "👤 {username} is still watching on {deviceName}:\n" +
+            "🎬 {itemTitle} ({itemYear})\n" +
+            "🕒 {itemDuration}";
 
         public static string PlaybackProgressEpisodes { get; } =
-            "👤 {eventArgs.Users[0].Username} is still watching on {eventArgs.DeviceName}:\n" +
-            "🎬 {eventArgs.Item.Series.Name} ({eventArgs.Item.ProductionYear})\n" +
-            "      S{playbackSeasonNumber} - E{playbackEpisodeNumber}\n" +
-            "      '{eventArgs.Item.Name}'";
+            "👤 {username} is still watching on {deviceName}:\n" +
+            "📺 {seriesTitle} ({itemYear})\n" +
+            "      S{seasonNumber} · E{episodeNumber}: '{itemTitle}'\n" +
+            "🕒 {itemDuration}";
+
+        // PLAYBACK: START
 
         public static string PlaybackStartMovies { get; } =
             "👤 {username} is watching on {deviceName} ({playMethod}):\n" +
-            "🎬 {itemName} ({itemYear})\n" +
-            "📺 [{itemMediaType}] {itemGenres}\n" +
-            "🕒 {duration}\n" +
-            "📽 {overview}";
+            "🎬 {itemTitle} ({itemYear})\n" +
+            "📺 [{mediaType}] {itemGenres}\n" +
+            "🕒 {itemDuration}\n" +
+            "📽 {itemOverview}";
 
         public static string PlaybackStartEpisodes { get; } =
-            "👤 {eventArgs.Users[0].Username} is watching on {eventArgs.DeviceName} ({eventArgs.Session.PlayState.PlayMethod}):\n" +
-            "🎬 {eventArgs.Item.Series.Name} ({eventArgs.Item.ProductionYear})\n" +
-            "      S{playbackSeasonNumber} - E{playbackEpisodeNumber}\n" +
-            "      '{eventArgs.Item.Name}'\n" +
-            "📺 [{eventArgs.Item.MediaType}] {eventArgs.Item.Series.Genres}\n" +
-            "🕒 {duration}\n" +
-            "📽 {eventArgs.Item.Overview}";
+            "👤 {username} is watching on {deviceName} ({playMethod}):\n" +
+            "📺 {seriesTitle} ({itemYear})\n" +
+            "      S{seasonNumber} · E{episodeNumber}: '{itemTitle}'\n" +
+            "📺 [{mediaType}] {itemGenres}\n" +
+            "🕒 {itemDuration}\n" +
+            "📽 {itemOverview}";
+
+        // PLAYBACK: STOP
 
         public static string PlaybackStopMovies { get; } =
-            "👤 {eventArgs.Users[0].Username} stopped watching:\n" +
-            "🎬 {eventArgs.Item.Name} ({eventArgs.Item.ProductionYear})";
+            "👤 {username} stopped watching:\n" +
+            "🎬 {itemTitle} ({itemYear})";
 
         public static string PlaybackStopEpisodes { get; } =
-            "👤 {eventArgs.Users[0].Username} stopped watching:\n" +
-            "🎬 {eventArgs.Item.Series.Name} ({eventArgs.Item.ProductionYear})\n" +
-            "      S{playbackSeasonNumber} - E{playbackEpisodeNumber}\n" +
-            "      '{eventArgs.Item.Name}'";
+            "👤 {username} stopped watching:\n" +
+            "📺 {seriesTitle} ({itemYear})\n" +
+            "      S{seasonNumber} · E{episodeNumber}: '{itemTitle}'";
+
+        // PLUGINS
 
         public static string PluginInstallationCancelled { get; } =
-            "🔴 {eventArgs.Argument.Name} plugin installation cancelled (version {eventArgs.Argument.Version}):";
+            "🔴 Plugin {itemName} installation cancelled (version {itemVersion}).";
 
         public static string PluginInstallationFailed { get; } =
-            "🔴 {eventArgs.InstallationInfo} plugin installation failed (version {eventArgs.VersionInfo}):\n" +
-            "{eventArgs.Exception}";
+            "🔴 Plugin {itemName} installation failed (version {itemVersion}).\n" +
+            "🧩 Package: {itemPackageName}\n" +
+            "🗒️ {itemPackageDescription}\n" +
+            "⚠️ Error: {errorMessage}";
 
         public static string PluginInstalled { get; } =
-            "🚧 {eventArgs.Argument.Name} plugin installed (version {eventArgs.Argument.Version})\n\n" +
+            "✅ Plugin {itemName} installed (version {itemVersion}).\n" +
+            "🧩 Package: {itemPackageName}\n\n" +
             "You may need to restart your server.";
 
         public static string PluginInstalling { get; } =
-            "🚧 {eventArgs.Argument.Name} plugin is installing (version {eventArgs.Argument.Version})";
+            "🚧 Plugin {itemName} is installing (version {itemVersion})…";
 
         public static string PluginUninstalled { get; } =
-            "🚧 {eventArgs.Argument.Name} plugin uninstalled";
+            "🚧 Plugin {itemName} (version {itemVersion}) uninstalled.\n" +
+            "🗒️ {itemDescription}\n" +
+            "Status: {itemStatus}";
 
         public static string PluginUpdated { get; } =
-            "🚧 {eventArgs.Argument.Name} plugin updated to version {eventArgs.Argument.Version}:" +
-            "🗒️ {eventArgs.Argument.Changelog}\n\n" +
+            "🚧 Plugin {itemName} updated to version {itemVersion}.\n" +
+            "🧩 Package: {itemPackageName}\n" +
+            "🗒️ {itemPackageOverview}\n\n" +
             "You may need to restart Jellyfin to apply the changes.";
 
+        // SESSION (if wired to something that exposes {username}/{deviceName})
+
         public static string SessionStart { get; } =
-            "👤 {eventArgs.Argument.UserName} has started a session on:\n" +
-            "💻 {eventArgs.Argument.Client} ({eventArgs.Argument.DeviceName})\n";
+            "👤 {username} has started a session on {deviceName}.";
+
+        // SUBTITLES
 
         public static string SubtitleDownloadFailure { get; } =
-            "🚫 Subtitle download failed for {eventArgs.Item.Name}";
+            "🚫 Subtitle download failed from {subtitleProvider} for {itemTitle} ({itemYear}).\n" +
+            "⚠️ {errorMessage}";
+
+        // TASKS
 
         public static string TaskCompleted { get; } =
-            "🧰 Task {eventArgs.Task.Name} completed: {eventArgs.Task.CurrentProgress}%\n" +
-            "🗒️ ({eventArgs.Task.Category}) {eventArgs.Task.Description}";
+            "🧰 Task {taskName} completed with status {status}.\n" +
+            "⏱️ Duration: {durationMinutes} minutes\n" +
+            "🗒️ ({taskCategory}) {taskDescription}\n" +
+            "⚠️ {error}";
+
+        // USERS
 
         public static string UserCreated { get; } =
-            "👤 User {eventArgs.Argument.Username} created.";
+            "👤 User {username} created.";
 
         public static string UserDeleted { get; } =
-            "🗑️ User {eventArgs.Argument.Username} deleted.";
+            "🗑️ User {username} deleted.";
 
         public static string UserLockedOut { get; } =
-            "👤🔒 User {eventArgs.Argument.Username} locked out";
+            "👤🔒 User {username} locked out.";
 
         public static string UserPasswordChanged { get; } =
-            "👤 User {eventArgs.Argument.Username} changed his password.";
+            "👤 User {username} changed their password.";
 
         public static string UserUpdated { get; } =
-            "👤 User {eventArgs.Argument.Username} has been updated";
+            "👤 User {username} has been updated.";
 
         public static string UserDataSaved { get; } =
-            "👤 User {eventArgs.Argument.Username} data saved.";
+            "👤 User {username} data saved.";
     }
-
 }
