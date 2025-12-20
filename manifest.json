@@ -1,0 +1,13 @@
+[
+    {
+        "category": "Administration",
+        "guid": "fd76211d-17e0-4a72-a23f-c6eeb1e48b3a",
+        "name": "Telefin",
+        "owner": "LoloZarro",
+        "overview": "Enable Telegram Notifications for Jellyfin Events!",
+        "description": "This Plugin can be used to configure Telegram Notifications on a per user basis, that allows to receive notification such as when a new item is added to the library or a playback is started and many more.",
+        "imageUrl": "https://raw.githubusercontent.com/LoloZarro/Telefin/main/assets/banner.png",
+        "versions": [
+        ]
+    }
+]

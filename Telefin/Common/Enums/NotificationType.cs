@@ -1,0 +1,29 @@
+﻿namespace Telefin.Common.Enums
+{
+    public enum NotificationType
+    {
+        ItemAdded,
+        ItemDeleted,
+        PlaybackStart,
+        PlaybackProgress,
+        PlaybackStop,
+        SubtitleDownloadFailure,
+        AuthenticationFailure,
+        AuthenticationSuccess,
+        SessionStart,
+        PendingRestart,
+        TaskCompleted,
+        PluginInstallationCancelled,
+        PluginInstallationFailed,
+        PluginInstalled,
+        PluginInstalling,
+        PluginUninstalled,
+        PluginUpdated,
+        UserCreated,
+        UserDeleted,
+        UserLockedOut,
+        UserPasswordChanged,
+        UserUpdated,
+        UserDataSaved
+    }
+}
