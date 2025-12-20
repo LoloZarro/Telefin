@@ -316,7 +316,7 @@ export default function (view) {
                         chatId: userConfig.ChatId,
                         threadId: threadId,
                     };
-                    const url = new URL('/TelefinApi/TestNotifier', window.location.origin);
+                    const url = new URL('/TelefinApi/SmokeTest', window.location.origin);
                     Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
                     return fetch(url);
                 })

@@ -2,10 +2,10 @@ using System;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading.Tasks;
-using Telefin.Common.Enums;
-using Telefin.Helper;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Events.Session;
+using Telefin.Common.Enums;
+using Telefin.Helper;
 
 namespace Telefin.Notifiers;
 

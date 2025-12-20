@@ -22,10 +22,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="Configuration\Web\configPage.html" />
-    <EmbeddedResource Include="Configuration\Web\configPage.html" />
-    <None Remove="Configuration\Web\configPage.js" />
-    <EmbeddedResource Include="Configuration\Web\configPage.js" />
+    <None Remove="Web\configPage.html" />
+    <EmbeddedResource Include="Web\configPage.html" />
+    <None Remove="Web\configPage.js" />
+    <EmbeddedResource Include="Web\configPage.js" />
   </ItemGroup>
 
 </Project>

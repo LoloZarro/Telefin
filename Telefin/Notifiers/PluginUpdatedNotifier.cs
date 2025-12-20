@@ -1,19 +1,19 @@
 using System;
 using System.Threading.Tasks;
-using Telefin.Common.Enums;
-using Telefin.Helper;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Events.Updates;
+using Telefin.Common.Enums;
+using Telefin.Helper;
 
 namespace Telefin.Notifiers;
 
 public class PluginUpdatedNotifier : IEventConsumer<PluginUpdatedEventArgs>
 {
-    private readonly NotificationDispatcher notificationDispatcher;
+    private readonly NotificationDispatcher _notificationDispatcher;
 
     public PluginUpdatedNotifier(NotificationDispatcher notificationFilter)
     {
-        notificationDispatcher = notificationFilter;
+        _notificationDispatcher = notificationFilter;
     }
 
     public async Task OnEvent(PluginUpdatedEventArgs eventArgs)
@@ -23,6 +23,6 @@ public class PluginUpdatedNotifier : IEventConsumer<PluginUpdatedEventArgs>
             throw new ArgumentNullException(nameof(eventArgs));
         }
 
-        await notificationDispatcher.DispatchNotificationsAsync(NotificationType.PluginUpdated, eventArgs).ConfigureAwait(false);
+        await _notificationDispatcher.DispatchNotificationsAsync(NotificationType.PluginUpdated, eventArgs).ConfigureAwait(false);
     }
 }

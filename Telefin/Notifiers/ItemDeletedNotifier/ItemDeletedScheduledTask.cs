@@ -27,7 +27,6 @@ public class ItemDeletedScheduledTask : IScheduledTask, IConfigurableScheduledTa
 
     public string Description => "Processes all items added to the queue of item that have been removed from the server since the last run, including items still pending, and notifies all configured users subscribed to the relevant events(Episode, Season, etc.)";
 
-
     public string Category => _localizationManager.GetLocalizedString("TasksLibraryCategory");
 
     public bool IsHidden => false;

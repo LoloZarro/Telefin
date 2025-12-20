@@ -1,9 +1,9 @@
 using System;
 using System.Threading.Tasks;
 using Jellyfin.Data.Events.Users;
+using MediaBrowser.Controller.Events;
 using Telefin.Common.Enums;
 using Telefin.Helper;
-using MediaBrowser.Controller.Events;
 
 namespace Telefin.Notifiers;
 

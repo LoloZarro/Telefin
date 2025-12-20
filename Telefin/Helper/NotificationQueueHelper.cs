@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Telefin.Common.Enums;
-using Telefin.Common.Models;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using Telefin.Common.Enums;
+using Telefin.Common.Models;
 
 namespace Telefin.Helper
 {
@@ -174,18 +174,6 @@ namespace Telefin.Helper
                 .Concat(episodeCandidates)      // notify episodes not covered by any season candidate
                 .Concat(otherMediaItems)        // always notify for other media types (Audio, Book, etc.)
                 .ToList();
-
-            //var candidates = movies
-            //    .Concat(createdSeasonCandidates)
-            //    .Concat(createdSeriesCandidates)
-            //    .Concat(series)
-            //    .Concat(seasons.Where(season => !series.Any(s => s.ChildItemIds.Contains(season.ItemId)) && !createdSeriesCandidates.Any(s => s.ChildItemIds.Contains(season.ItemId)))
-            //    .Concat(episodes.Where(season =>
-            //        !series.Any(s => s.ChildItemIds.Contains(season.ItemId)) &&
-            //        !createdSeriesCandidates.Any(s => s.ChildItemIds.Contains(season.ItemId)) &&
-            //        !seasons.Any(s => s.ChildItemIds.Contains(season.ItemId)) &&
-            //        !createdSeasonCandidates.Any(s => s.ChildItemIds.Contains(season.ItemId)))))
-            //    .ToList();
 
             return candidates;
         }

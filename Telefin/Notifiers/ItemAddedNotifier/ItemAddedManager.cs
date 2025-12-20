@@ -5,14 +5,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Telefin.Common.Enums;
+using Telefin.Common.Extensions;
 using Telefin.Common.Models;
 using Telefin.Helper;
 
@@ -21,11 +19,12 @@ namespace Telefin.Notifiers.ItemAddedNotifier;
 public class ItemAddedManager : IItemAddedManager
 {
     private const int MaxRetries = 10;
+    private const NotificationType TypeOfNotification = NotificationType.ItemAdded;
 
     private readonly ILogger<ItemAddedManager> _logger;
     private readonly ILibraryManager _libraryManager;
     private readonly IServerApplicationHost _applicationHost;
-    private readonly ConcurrentDictionary<Guid, QueuedItemContainer> _itemProcessQueue;
+    private readonly ConcurrentDictionary<Guid, QueuedItemContainer> _itemProcessQueue; // TODO: Create own object for queue
 
     public ItemAddedManager(
         ILogger<ItemAddedManager> logger,
@@ -40,12 +39,12 @@ public class ItemAddedManager : IItemAddedManager
 
     public async Task ProcessItemsAsync()
     {
-        _logger.LogDebug("{PluginName}: Processing notification queue for recently added items...", typeof(Plugin).Name);
+        _logger.LogDebug("{PluginName} - {ClassName}: Processing notification queue for recently added items...", typeof(Plugin).Name, nameof(ItemAddedManager));
 
         var queueSnapshot = _itemProcessQueue.ToArray();
         if (queueSnapshot.Length == 0)
         {
-            _logger.LogInformation("{PluginName}: No recently added items to process in the queue", typeof(Plugin).Name);
+            _logger.LogInformation("{PluginName} - {ClassName}: No recently added items to process in the queue", typeof(Plugin).Name, nameof(ItemAddedManager));
             return;
         }
 
@@ -66,36 +65,32 @@ public class ItemAddedManager : IItemAddedManager
                 var item = candidate.BaseItem ?? _libraryManager.GetItemById(itemIdToNotifyOn);
                 if (item is null) // Should technically not be possible anymore
                 {
-                    _logger.LogDebug("{PluginName}: Item {ItemId} not found, removing from queue", typeof(Plugin).Name, itemIdToNotifyOn);
+                    _logger.LogDebug("{PluginName} - {ClassName}: Item {ItemId} not found, removing from queue", typeof(Plugin).Name, nameof(ItemAddedManager), itemIdToNotifyOn);
                     MarkProcessed(sourceIds); // Drop all items related to this candidate
                     continue;
                 }
 
-                _logger.LogDebug("{PluginName}: Processing notification for {ItemName} (consuming {Count} queued items)", typeof(Plugin).Name, item.Name, sourceIds.Count);
+                _logger.LogDebug("{PluginName} - {ClassName}: Processing notification for {ItemName} (consuming {Count} queued items)", typeof(Plugin).Name, nameof(ItemAddedManager), item.Name, sourceIds.Count);
 
                 if (item.ProviderIds.Keys.Count == 0) // Should technically not be possible anymore
                 {
                     if (ShouldRetry(sourceIds))
                     {
-                        _logger.LogDebug("{PluginName}: Requeue {ItemName}, no metadata yet (retry attempt for one of {Count} items)", typeof(Plugin).Name, item.Name, sourceIds.Count);
+                        _logger.LogDebug("{PluginName} - {ClassName}: Requeue {ItemName}, no metadata yet (retry attempt for one of {Count} items)", typeof(Plugin).Name, nameof(ItemAddedManager), item.Name, sourceIds.Count);
                         IncrementRetry(sourceIds);
                         continue;
                     }
 
-                    _logger.LogWarning("{PluginName}: Item {ItemName} has no metadata after {MaxRetries} retries; skipping notification", typeof(Plugin).Name, item.Name, MaxRetries);
+                    _logger.LogWarning("{PluginName} - {ClassName}: Item {ItemName} has no metadata after {MaxRetries} retries; skipping notification", typeof(Plugin).Name, nameof(ItemAddedManager), item.Name, MaxRetries);
                     MarkProcessed(sourceIds); // Drop all items related to this candidate
                     continue;
                 }
 
-                var subtype = GetItemAddedNotificationSubtype(item);
-                var imagePath = GetImagePathForItem(item);
-
                 await notificationDispatcher.DispatchNotificationsAsync(
-                    NotificationType.ItemAdded,
+                    TypeOfNotification,
                     item,
                     userId: string.Empty,
-                    imagePath: imagePath,
-                    subtype: subtype)
+                    subtype: TypeOfNotification.ToNotificationSubType(item)!) // Entry point already checks for null
                     .ConfigureAwait(false);
 
                 MarkProcessed(sourceIds);
@@ -116,7 +111,7 @@ public class ItemAddedManager : IItemAddedManager
             var baseItem = _libraryManager.GetItemById(itemId);
             if (baseItem is null)
             {
-                _logger.LogDebug("{PluginName}: Item {ItemId} not found, removing from queue", typeof(Plugin).Name, itemId);
+                _logger.LogDebug("{PluginName} - {ClassName}: Item {ItemId} not found, removing from queue", typeof(Plugin).Name, nameof(ItemAddedManager), itemId);
                 MarkProcessed([itemId]);
                 continue;
             }
@@ -126,12 +121,12 @@ public class ItemAddedManager : IItemAddedManager
             {
                 if (ShouldRetry([itemId]))
                 {
-                    _logger.LogDebug("{PluginName}: Requeue {ItemName}, no metadata yet retry next run", typeof(Plugin).Name, baseItem.Name);
+                    _logger.LogDebug("{PluginName} - {ClassName}: Requeue {ItemName}, no metadata yet retry next run", typeof(Plugin).Name, nameof(ItemAddedManager), baseItem.Name);
                     IncrementRetry([itemId]);
                     continue;
                 }
 
-                _logger.LogWarning("{PluginName}: Item {ItemName} has no metadata after {MaxRetries} retries. Notification will be skipped for this item.", typeof(Plugin).Name, baseItem.Name, MaxRetries);
+                _logger.LogWarning("{PluginName} - {ClassName}: Item {ItemName} has no metadata after {MaxRetries} retries. Notification will be skipped for this item.", typeof(Plugin).Name, nameof(ItemAddedManager), baseItem.Name, MaxRetries);
                 MarkProcessed([itemId]);
                 continue;
             }
@@ -191,47 +186,5 @@ public class ItemAddedManager : IItemAddedManager
         return itemIds.Any(id =>
             _itemProcessQueue.TryGetValue(id, out var container) &&
             container.RetryCount < MaxRetries);
-    }
-
-    private static string BuildImageUrl(Guid itemId)
-    {
-        var raw = Plugin.Instance?.Configuration.ServerUrl ?? "localhost:8096";
-
-        var hasScheme = raw.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
-                     || raw.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
-
-        var baseUri = new Uri(hasScheme ? raw : $"http://{raw}", UriKind.Absolute); // Do not remove scheme if present, could lead to issues
-
-        return new Uri(baseUri, $"/Items/{itemId}/Images/Primary").ToString();
-    }
-
-    private static string GetImagePathForItem(BaseItem item)
-    {
-        if (item is Episode episode)
-        {
-            return BuildImageUrl(episode.SeriesId);
-        }
-
-        if (item.PrimaryImagePath is not null)
-        {
-            return BuildImageUrl(item.Id);
-        }
-
-        return string.Empty;
-    }
-
-    private static string GetItemAddedNotificationSubtype(BaseItem item)
-    {
-        return item switch
-        {
-            Movie => "ItemAddedMovies",
-            Series => "ItemAddedSeries",
-            Season => "ItemAddedSeasons",
-            Episode => "ItemAddedEpisodes",
-            MusicAlbum => "ItemAddedAlbums",
-            Audio => "ItemAddedSongs",
-            Book => "ItemAddedBooks",
-            _ => "ItemAddedMovies"
-        };
     }
 }

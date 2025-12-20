@@ -1,9 +1,9 @@
 using System;
 using System.Threading.Tasks;
-using Telefin.Common.Enums;
-using Telefin.Helper;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Subtitles;
+using Telefin.Common.Enums;
+using Telefin.Helper;
 
 namespace Telefin.Notifiers;
 

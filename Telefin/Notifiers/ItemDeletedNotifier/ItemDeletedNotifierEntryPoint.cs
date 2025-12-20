@@ -1,42 +1,55 @@
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Telefin.Common.Enums;
+using Telefin.Common.Extensions;
 
 namespace Telefin.Notifiers.ItemDeletedNotifier;
 
 public class ItemDeletedNotifierEntryPoint : IHostedService
 {
+    private const NotificationType TypeOfNotification = NotificationType.ItemDeleted;
+
+    private readonly ILogger<ItemDeletedNotifierEntryPoint> _logger;
     private readonly IItemDeletedManager _itemDeletedManager;
     private readonly ILibraryManager _libraryManager;
 
     public ItemDeletedNotifierEntryPoint(
-        IItemDeletedManager itemDeletedManager,
+        ILogger<ItemDeletedNotifierEntryPoint> logger,
+        IItemDeletedManager itemAddedManager,
         ILibraryManager libraryManager)
     {
-        _itemDeletedManager = itemDeletedManager;
+        _logger = logger;
+        _itemDeletedManager = itemAddedManager;
         _libraryManager = libraryManager;
     }
 
     private void ItemDeletedHandler(object? sender, ItemChangeEventArgs itemChangeEventArgs)
     {
-        // Never notify on virtual items.
-        if (itemChangeEventArgs.Item.IsVirtualItem)
+        if (itemChangeEventArgs.UpdateReason != 0) // Do not renotify after initial adding
         {
             return;
         }
 
-        // Only notify on books, movies, series, seasons, episodes, albums and audio.
-        if (itemChangeEventArgs.Item.GetType() == typeof(MediaBrowser.Controller.Entities.Movies.Movie) ||
-        itemChangeEventArgs.Item.GetType() == typeof(MediaBrowser.Controller.Entities.TV.Series) ||
-        itemChangeEventArgs.Item.GetType() == typeof(MediaBrowser.Controller.Entities.TV.Season) ||
-        itemChangeEventArgs.Item.GetType() == typeof(MediaBrowser.Controller.Entities.TV.Episode) ||
-        itemChangeEventArgs.Item.GetType() == typeof(MediaBrowser.Controller.Entities.Audio.MusicAlbum) ||
-        itemChangeEventArgs.Item.GetType() == typeof(MediaBrowser.Controller.Entities.Audio.Audio) ||
-        itemChangeEventArgs.Item.GetType() == typeof(MediaBrowser.Controller.Entities.Book) ||
-        itemChangeEventArgs.Item.GetType() == typeof(MediaBrowser.Controller.Entities.AudioBook))
+        var item = itemChangeEventArgs.Item;
+
+        var subType = TypeOfNotification.ToNotificationSubType(item);
+        if (subType == null)
         {
-            _itemDeletedManager.AddItem(itemChangeEventArgs.Item);
+            _logger.LogWarning("{PluginName}: Notification for media type '{MediaType}' is not supported", typeof(Plugin).Name, item.GetType().ToString());
+            return;
+        }
+
+        // Never notify on virtual items.
+        if (!item.IsVirtualItem && item is Movie or Series or Season or Episode or MusicAlbum or Audio or Book or AudioBook)
+        {
+            _itemDeletedManager.AddItem(item);
         }
     }
 
