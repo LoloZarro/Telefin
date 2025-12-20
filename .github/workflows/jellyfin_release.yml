@@ -81,14 +81,16 @@ jobs:
              --arg timestamp "$TIMESTAMP" \
              --arg changelog "Automated release $VERSION" \
              '
-             .[0].versions += [{
-               checksum: $checksum,
-               version: $version,
-               targetAbi: $targetAbi,
-               sourceUrl: $sourceUrl,
-               timestamp: $timestamp,
-               changelog: $changelog
-             }]
+             .[0].versions = (
+               [{
+                 checksum: $checksum,
+                 version: $version,
+                 targetAbi: $targetAbi,
+                 sourceUrl: $sourceUrl,
+                 timestamp: $timestamp,
+                 changelog: $changelog
+               }] + .[0].versions
+             )
              ' "$MANIFEST_FILE" > manifest.new.json
 
           mv manifest.new.json "$MANIFEST_FILE"
