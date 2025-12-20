@@ -5,6 +5,9 @@ on:
     tags:
       - "*.*.*.*"      # e.g. 1.0.0.0, 1.2.3.4
 
+permissions:
+  contents: write
+  
 env:
   PROJECT_PATH: Telefin/Telefin.csproj
   PLUGIN_NAME: Telefin
@@ -43,7 +46,6 @@ jobs:
         run: |
           rm -f "${PLUGIN_NAME}.zip"
           cd publish
-          # Put everything from publish/ into the zip
           zip -r "../${PLUGIN_NAME}.zip" .
           cd ..
           ls -lh "${PLUGIN_NAME}.zip"
@@ -105,7 +107,6 @@ jobs:
           # Copy the updated manifest from the tag commit's tree
           git show "${GITHUB_REF#refs/tags/}:$MANIFEST_FILE" > "$MANIFEST_FILE"
 
-          # Re-run the jq update on this branch so manifest matches the new release
           TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
           SOURCE_URL="https://github.com/${{ github.repository }}/releases/download/${VERSION}/${PLUGIN_NAME}.zip"
 
@@ -116,14 +117,16 @@ jobs:
              --arg timestamp "$TIMESTAMP" \
              --arg changelog "Automated release $VERSION" \
              '
-             .[0].versions += [{
-               checksum: $checksum,
-               version: $version,
-               targetAbi: $targetAbi,
-               sourceUrl: $sourceUrl,
-               timestamp: $timestamp,
-               changelog: $changelog
-             }]
+             .[0].versions = (
+               [{
+                 checksum: $checksum,
+                 version: $version,
+                 targetAbi: $targetAbi,
+                 sourceUrl: $sourceUrl,
+                 timestamp: $timestamp,
+                 changelog: $changelog
+               }] + .[0].versions
+             )
              ' "$MANIFEST_FILE" > manifest.new.json
 
           mv manifest.new.json "$MANIFEST_FILE"
@@ -136,3 +139,4 @@ jobs:
           git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+		  
