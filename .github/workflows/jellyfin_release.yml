@@ -1,0 +1,136 @@
+name: Build & Release Telefin Jellyfin Plugin
+
+on:
+  push:
+    tags:
+      - "*.*.*.*"      # e.g. 1.0.0.0, 1.2.3.4
+
+env:
+  PROJECT_PATH: Telefin/Telefin.csproj
+  PLUGIN_NAME: Telefin
+  TARGET_ABI: 10.11.0.0                     # Jellyfin ABI version
+  MANIFEST_FILE: manifest.json
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set VERSION from tag
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Restore & Publish plugin
+        run: |
+          dotnet restore "$PROJECT_PATH"
+          dotnet publish "$PROJECT_PATH" -c Release -o publish
+
+      - name: Install zip & jq
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y zip jq
+
+      - name: Create plugin ZIP
+        run: |
+          rm -f "${PLUGIN_NAME}.zip"
+          cd publish
+          # Put everything from publish/ into the zip
+          zip -r "../${PLUGIN_NAME}.zip" .
+          cd ..
+          ls -lh "${PLUGIN_NAME}.zip"
+
+      - name: Generate MD5 checksum
+        id: checksum
+        run: |
+          CHECKSUM=$(md5sum "${PLUGIN_NAME}.zip" | cut -d ' ' -f1)
+          echo "CHECKSUM=$CHECKSUM" >> $GITHUB_ENV
+          echo "checksum=$CHECKSUM" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release and upload asset
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.VERSION }}
+          name: Telefin ${{ env.VERSION }}
+          draft: false
+          prerelease: false
+          files: |
+            ${{ env.PLUGIN_NAME }}.zip
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update manifest.json with new version entry
+        run: |
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          SOURCE_URL="https://github.com/${{ github.repository }}/releases/download/${VERSION}/${PLUGIN_NAME}.zip"
+
+          echo "Updating ${MANIFEST_FILE}..."
+          jq --arg checksum "$CHECKSUM" \
+             --arg version "$VERSION" \
+             --arg targetAbi "$TARGET_ABI" \
+             --arg sourceUrl "$SOURCE_URL" \
+             --arg timestamp "$TIMESTAMP" \
+             --arg changelog "Automated release $VERSION" \
+             '
+             .[0].versions += [{
+               checksum: $checksum,
+               version: $version,
+               targetAbi: $targetAbi,
+               sourceUrl: $sourceUrl,
+               timestamp: $timestamp,
+               changelog: $changelog
+             }]
+             ' "$MANIFEST_FILE" > manifest.new.json
+
+          mv manifest.new.json "$MANIFEST_FILE"
+          cat "$MANIFEST_FILE"
+
+      - name: Commit & push updated manifest
+        run: |
+          # Switch to default branch so we don't commit on the tag
+          git checkout "${{ github.event.repository.default_branch }}"
+          git pull
+
+          # Copy the updated manifest from the tag commit's tree
+          git show "${GITHUB_REF#refs/tags/}:$MANIFEST_FILE" > "$MANIFEST_FILE"
+
+          # Re-run the jq update on this branch so manifest matches the new release
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          SOURCE_URL="https://github.com/${{ github.repository }}/releases/download/${VERSION}/${PLUGIN_NAME}.zip"
+
+          jq --arg checksum "$CHECKSUM" \
+             --arg version "$VERSION" \
+             --arg targetAbi "$TARGET_ABI" \
+             --arg sourceUrl "$SOURCE_URL" \
+             --arg timestamp "$TIMESTAMP" \
+             --arg changelog "Automated release $VERSION" \
+             '
+             .[0].versions += [{
+               checksum: $checksum,
+               version: $version,
+               targetAbi: $targetAbi,
+               sourceUrl: $sourceUrl,
+               timestamp: $timestamp,
+               changelog: $changelog
+             }]
+             ' "$MANIFEST_FILE" > manifest.new.json
+
+          mv manifest.new.json "$MANIFEST_FILE"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add "$MANIFEST_FILE"
+          git commit -m "Update manifest for version $VERSION" || echo "No changes to commit"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
