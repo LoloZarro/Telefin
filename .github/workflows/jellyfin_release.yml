@@ -32,23 +32,33 @@ jobs:
         with:
           dotnet-version: "9.0.x"
 
-      - name: Restore & Publish plugin
+    - name: Build (Release)
         run: |
-          dotnet restore "$PROJECT_PATH"
-          dotnet publish "$PROJECT_PATH" -c Release -o publish
-
-      - name: Install zip & jq
+        dotnet restore "$PROJECT_PATH"
+        dotnet build "$PROJECT_PATH" -c Release
+    
+    - name: Create plugin ZIP (only Telefin.* + meta.json + optional assets)
         run: |
-          sudo apt-get update
-          sudo apt-get install -y zip jq
-
-      - name: Create plugin ZIP
-        run: |
-          rm -f "${PLUGIN_NAME}.zip"
-          cd publish
-          zip -r "../${PLUGIN_NAME}.zip" .
-          cd ..
-          ls -lh "${PLUGIN_NAME}.zip"
+        sudo apt-get update
+        sudo apt-get install -y zip
+        
+        rm -rf package
+        mkdir -p package
+        
+        # Find the build output folder that contains Telefin.dll
+        OUTDIR="$(dirname "$(find . -type f -path "*/bin/Release/*/${PLUGIN_NAME}.dll" | head -n 1)")"
+        echo "Build output dir: $OUTDIR"
+        ls -la "$OUTDIR"
+        
+        # Only copy dll
+        cp "$OUTDIR/${PLUGIN_NAME}.dll" package/
+        
+        # Create zip
+        rm -f "${PLUGIN_NAME}.zip"
+        (cd package && zip -r "../${PLUGIN_NAME}.zip" .)
+        
+        echo "ZIP contents:"
+        unzip -l "${PLUGIN_NAME}.zip"
 
       - name: Generate MD5 checksum
         id: checksum
