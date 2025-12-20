@@ -7,7 +7,7 @@ on:
 
 permissions:
   contents: write
-  
+
 env:
   PROJECT_PATH: Telefin/Telefin.csproj
   PLUGIN_NAME: Telefin
@@ -139,4 +139,3 @@ jobs:
           git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-		  
