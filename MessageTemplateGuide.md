@@ -281,6 +281,6 @@ Used in:
 * Placeholders are **case-sensitive**.
 * If you use a placeholder not supported for that notification type, it will appear unchanged.
 * You can include **emoji**, **line breaks**, and any text you want around the placeholders.
-* Depeding on the media type, some placeholder will not contain certain values (e.g. SeasonNumber for Movies)
+* Depeding on the media type, some placeholder will not contain certain values (e.g. {seasonNumber} for movies)
 
 ---
