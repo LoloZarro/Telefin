@@ -9,6 +9,14 @@
     "imageUrl": "https://raw.githubusercontent.com/LoloZarro/Telefin/main/assets/Banner.png",
     "versions": [
       {
+        "checksum": "d161612200086d5853c552375b7ec540",
+        "version": "1.0.0.9",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/LoloZarro/Telefin/releases/download/1.0.0.9/Telefin.zip",
+        "timestamp": "2025-12-20T18:54:52Z",
+        "changelog": "Automated release 1.0.0.9"
+      },
+      {
         "checksum": "a46d804d3e4f42dda83b5b8f335b3bc9",
         "version": "1.0.0.6",
         "targetAbi": "10.11.0.0",
