@@ -3,7 +3,7 @@ name: Build Telefin
 on:
   push:
     branches:
-      - master
+      - main
 
 env:
   PROJECT_PATH: Telefin/Telefin.csproj
