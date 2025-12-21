@@ -15,54 +15,6 @@
         "sourceUrl": "https://github.com/LoloZarro/Telefin/releases/download/1.0.0.10/Telefin.zip",
         "timestamp": "2025-12-21T12:29:53Z",
         "changelog": "Automated release 1.0.0.10"
-      },
-      {
-        "checksum": "d161612200086d5853c552375b7ec540",
-        "version": "1.0.0.9",
-        "targetAbi": "10.11.0.0",
-        "sourceUrl": "https://github.com/LoloZarro/Telefin/releases/download/1.0.0.9/Telefin.zip",
-        "timestamp": "2025-12-20T18:54:52Z",
-        "changelog": "Automated release 1.0.0.9"
-      },
-      {
-        "checksum": "a46d804d3e4f42dda83b5b8f335b3bc9",
-        "version": "1.0.0.6",
-        "targetAbi": "10.11.0.0",
-        "sourceUrl": "https://github.com/LoloZarro/Telefin/releases/download/1.0.0.6/Telefin.zip",
-        "timestamp": "2025-12-20T18:36:28Z",
-        "changelog": "Automated release 1.0.0.6"
-      },
-      {
-        "checksum": "075b87237ecacd9a1d5b797573c54fda",
-        "version": "1.0.0.4",
-        "targetAbi": "10.11.0.0",
-        "sourceUrl": "https://github.com/LoloZarro/Telefin/releases/download/1.0.0.4/Telefin.zip",
-        "timestamp": "2025-12-20T18:20:57Z",
-        "changelog": "Automated release 1.0.0.4"
-      },
-      {
-        "checksum": "9690f84c04e66612c2b4d3a74a31f603",
-        "version": "1.0.0.3",
-        "targetAbi": "10.11.0.0",
-        "sourceUrl": "https://github.com/LoloZarro/Telefin/releases/download/1.0.0.3/Telefin.zip",
-        "timestamp": "2025-12-20T18:13:40Z",
-        "changelog": "Automated release 1.0.0.3"
-      },
-      {
-        "checksum": "a0111b2a1d36e0f5e51300e238c9fd7e",
-        "version": "1.0.0.2",
-        "targetAbi": "10.11.0.0",
-        "sourceUrl": "https://github.com/LoloZarro/Telefin/releases/download/1.0.0.2/Telefin.zip",
-        "timestamp": "2025-12-20T17:49:34Z",
-        "changelog": "Automated release 1.0.0.2"
-      },
-      {
-        "checksum": "33d393d43a12d73fcacf368bd71a324e",
-        "version": "1.0.0.0",
-        "targetAbi": "10.11.0.0",
-        "sourceUrl": "https://github.com/LoloZarro/Telefin/releases/download/1.0.0.0/Telefin.zip",
-        "timestamp": "2025-12-20T17:38:47Z",
-        "changelog": "Automated release 1.0.0.0"
       }
     ]
   }
