@@ -30,45 +30,20 @@ export default function (view) {
                 "UserDataSaved": "User Data Saved"
             },
 
-            defaultMessages: {
-                "ItemAddedMovies": "🎬 {item.Name} ({item.ProductionYear})\n      added to library\n\n📽 {item.Overview}",
-                "ItemAddedSeries": "📺 [Serie] {serie.Name} ({item.ProductionYear}) added to library\n\n📽 {item.Overview}",
-                "ItemAddedSeasons": "📺 {season.Series.Name} ({item.ProductionYear})\n      Season {seasonNumber} added to library\n\n📽 {item.Overview}",
-                "ItemAddedEpisodes": "📺 {episode.Series.Name} ({item.ProductionYear})\n      S{eSeasonNumber} - E{episodeNumber}\n      '{item.Name}' added to library\n\n📽 {item.Overview}",
-                "ItemAddedAlbums": "🎵 [Album] {album.Name} ({item.ProductionYear}) added to library",
-                "ItemAddedSongs": "🎵 [Audio] {audio.Name} ({item.ProductionYear}) added to library",
-                "ItemAddedBooks": "📖 [Book] {item.name} added to library\n\n🖋️ {item.Overview}",
-                "ItemDeletedMovies": "🗑️🎬 {item.Name} ({item.ProductionYear})\n      removed from library\n\n📽 {item.Overview}",
-                "ItemDeletedSeries": "🗑️📺 [Serie] {serie.Name} ({item.ProductionYear}) removed from library\n\n📽 {item.Overview}",
-                "ItemDeletedSeasons": "🗑️📺 {season.Series.Name} ({item.ProductionYear})\n      Season {seasonNumber} removed from library\n\n📽 {item.Overview}",
-                "ItemDeletedEpisodes": "🗑️📺 {episode.Series.Name} ({item.ProductionYear})\n      S{eSeasonNumber} - E{episodeNumber}\n      '{item.Name}' removed from library\n\n📽 {item.Overview}",
-                "ItemDeletedAlbums": "🗑️🎵 [Album] {album.Name} ({item.ProductionYear}) removed from library",
-                "ItemDeletedSongs": "🗑️🎵 [Audio] {audio.Name} ({item.ProductionYear}) removed from library",
-                "ItemDeletedBooks": "🗑️📖 [Book] {item.name} removed from library\n\n🖋️ {item.Overview}",
-                "AuthenticationFailure": "🔒 Authentication failure on {eventArgs.Argument.DeviceName} for user {eventArgs.Argument.Username}",
-                "AuthenticationSuccess": "🔓 Authentication success for user {eventArgs.Argument.User.Name} on {eventArgs.Argument.SessionInfo.DeviceName}",
-                "PendingRestart": "🔄 Jellyfin is pending a restart.",
-                "PlaybackProgressMovies": "👤 {eventArgs.Users[0].Username} is still watching on {eventArgs.DeviceName}:\n🎬 {eventArgs.Item.Name} ({eventArgs.Item.ProductionYear})",
-                "PlaybackProgressEpisodes": "👤 {eventArgs.Users[0].Username} is still watching on {eventArgs.DeviceName}:\n🎬 {eventArgs.Item.Series.Name} ({eventArgs.Item.ProductionYear})\n      S{playbackSeasonNumber} - E{playbackEpisodeNumber}\n      '{eventArgs.Item.Name}'",
-                "PlaybackStartMovies": "👤 {eventArgs.Users[0].Username} is watching on {eventArgs.DeviceName} ({eventArgs.Session.PlayState.PlayMethod}):\n🎬 {eventArgs.Item.Name} ({eventArgs.Item.ProductionYear})\n📺 [{eventArgs.Item.MediaType}] {eventArgs.Item.Genres}\n🕒 {duration}\n📽 {eventArgs.Item.Overview}",
-                "PlaybackStartEpisodes": "👤 {eventArgs.Users[0].Username} is watching on {eventArgs.DeviceName} ({eventArgs.Session.PlayState.PlayMethod}):\n🎬 {eventArgs.Item.Series.Name} ({eventArgs.Item.ProductionYear})\n      S{playbackSeasonNumber} - E{playbackEpisodeNumber}\n      '{eventArgs.Item.Name}'\n📺 [{eventArgs.Item.MediaType}] {eventArgs.Item.Series.Genres}\n🕒 {duration}\n📽 {eventArgs.Item.Overview}",
-                "PlaybackStopMovies": "👤 {eventArgs.Users[0].Username} stopped watching:\n🎬 {eventArgs.Item.Name} ({eventArgs.Item.ProductionYear})",
-                "PlaybackStopEpisodes": "👤 {eventArgs.Users[0].Username} stopped watching:\n🎬 {eventArgs.Item.Series.Name} ({eventArgs.Item.ProductionYear})\n      S{playbackSeasonNumber} - E{playbackEpisodeNumber}\n      '{eventArgs.Item.Name}'",
-                "PluginInstallationCancelled": "🔴 {eventArgs.Argument.Name} plugin installation cancelled (version {eventArgs.Argument.Version}):",
-                "PluginInstallationFailed": "🔴 {eventArgs.InstallationInfo} plugin installation failed (version {eventArgs.VersionInfo}):\n{eventArgs.Exception}",
-                "PluginInstalled": "🚧 {eventArgs.Argument.Name} plugin installed (version {eventArgs.Argument.Version})\n\nYou may need to restart your server.",
-                "PluginInstalling": "🚧 {eventArgs.Argument.Name} plugin is installing (version {eventArgs.Argument.Version})",
-                "PluginUninstalled": "🚧 {eventArgs.Argument.Name} plugin uninstalled",
-                "PluginUpdated": "🚧 {eventArgs.Argument.Name} plugin updated to version {eventArgs.Argument.Version}:🗒️ {eventArgs.Argument.Changelog}\n\nYou may need to restart Jellyfin to apply the changes.",
-                "SessionStart": "👤 {eventArgs.Argument.UserName} has started a session on:\n💻 {eventArgs.Argument.Client} ({eventArgs.Argument.DeviceName})\n",
-                "SubtitleDownloadFailure": "🚫 Subtitle download failed for {eventArgs.Item.Name}",
-                "TaskCompleted": "🧰 Task {eventArgs.Task.Name} completed: {eventArgs.Task.CurrentProgress}%\n🗒️ ({eventArgs.Task.Category}) {eventArgs.Task.Description}",
-                "UserCreated": "👤 User {eventArgs.Argument.Username} created.",
-                "UserDeleted": "🗑️ User {eventArgs.Argument.Username} deleted.",
-                "UserLockedOut": "👤🔒 User {eventArgs.Argument.Username} locked out",
-                "UserPasswordChanged": "👤 User {eventArgs.Argument.Username} changed his password.",
-                "UserUpdated": "👤 User {eventArgs.Argument.Username} has been updated",
-                "UserDataSaved": "👤 User {eventArgs.Argument.Username} data saved."
+            defaultMessages: {},
+
+            loadDefaultMessages: async function () {
+                const response = await fetch('/TelefinApi/DefaultMessages', {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' }
+                });
+
+                if (!response.ok) {
+                    console.error('Failed to load default messages', response.status, await response.text());
+                    return {};
+                }
+
+                return await response.json();
             },
 
             loadNotificationTypes: function (userConfig) {
@@ -173,6 +148,8 @@ export default function (view) {
             if (select && select.options.length > 0 && !select.value) {
                 select.selectedIndex = 0;
             }
+
+            this.notificationType.defaultMessages = await this.notificationType.loadDefaultMessages() ?? {};
 
             this.loadConfig();
 
