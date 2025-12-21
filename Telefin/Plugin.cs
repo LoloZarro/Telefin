@@ -35,12 +35,12 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
     {
         yield return new PluginPageInfo
         {
-            Name = this.Name,
+            Name = Name,
             EmbeddedResourcePath = string.Format(CultureInfo.InvariantCulture, "{0}.Web.configPage.html", GetType().Namespace)
         };
         yield return new PluginPageInfo
         {
-            Name = $"{this.Name}.js",
+            Name = $"{Name}.js",
             EmbeddedResourcePath = string.Format(CultureInfo.InvariantCulture, "{0}.Web.configPage.js", GetType().Namespace)
         };
     }
