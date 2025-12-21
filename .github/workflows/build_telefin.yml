@@ -1,0 +1,28 @@
+name: Build Telefin
+
+on:
+  push:
+    branches:
+      - master
+
+env:
+  PROJECT_PATH: Telefin/Telefin.csproj
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Restore
+        run: dotnet restore "$PROJECT_PATH"
+
+      - name: Build (Release)
+        run: dotnet build "$PROJECT_PATH" -c Release --no-restore
