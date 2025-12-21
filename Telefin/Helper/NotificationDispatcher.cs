@@ -124,8 +124,8 @@ namespace Telefin.Helper
                 NotificationType.PlaybackStop => new PlaybackContext(eventArgs),
                 NotificationType.PlaybackProgress => new PlaybackContext(eventArgs),
 
-                NotificationType.ItemAdded => new LibraryItemContext(eventArgs),
-                NotificationType.ItemDeleted => new LibraryItemContext(eventArgs),
+                NotificationType.ItemAdded => new LibraryItemAddedContext(eventArgs),
+                NotificationType.ItemDeleted => new LibraryItemDeletedContext(eventArgs),
 
                 NotificationType.AuthenticationFailure => new AuthenticationRequestContext(eventArgs),
                 NotificationType.AuthenticationSuccess => new AuthenticationResultContext(eventArgs),

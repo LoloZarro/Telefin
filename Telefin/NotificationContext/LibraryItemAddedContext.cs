@@ -4,11 +4,11 @@ using Telefin.Common.Extensions;
 
 namespace Telefin.NotificationContext
 {
-    internal class LibraryItemContext : NotificationContextBase
+    internal class LibraryItemAddedContext : NotificationContextBase
     {
         private readonly BaseItem _item;
 
-        public LibraryItemContext(BaseItem item)
+        public LibraryItemAddedContext(BaseItem item)
         {
             _item = item;
         }

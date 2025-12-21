@@ -39,17 +39,18 @@ public class ItemDeletedNotifierEntryPoint : IHostedService
 
         var item = itemChangeEventArgs.Item;
 
-        var subType = TypeOfNotification.ToNotificationSubType(item);
-        if (subType == null)
+        if (AddItemToQueue(item))
         {
-            _logger.LogWarning("{PluginName}: Notification for media type '{MediaType}' is not supported", typeof(Plugin).Name, item.GetType().ToString());
             return;
         }
 
-        // Never notify on virtual items.
-        if (!item.IsVirtualItem && item is Movie or Series or Season or Episode or MusicAlbum or Audio or Book or AudioBook)
+        // Fallback: check for folder type (deleted episodes are delievered in a folder for example)
+        if (item is Folder folder)
         {
-            _itemDeletedManager.AddItem(item);
+            foreach (var child in folder.Children ?? [])
+            {
+                AddItemToQueue(child);
+            }
         }
     }
 
@@ -63,5 +64,34 @@ public class ItemDeletedNotifierEntryPoint : IHostedService
     {
         _libraryManager.ItemRemoved -= ItemDeletedHandler;
         return Task.CompletedTask;
+    }
+
+    private bool AddItemToQueue(BaseItem item)
+    {
+        // Never notify on virtual items.
+        if (!IsSubTypeSupported(item) && !item.IsVirtualItem)
+        {
+            return false;
+        }
+
+        if (item is Movie or Series or Season or Episode or MusicAlbum or Audio or Book) // Audio covers AudioBook
+        {
+            _itemDeletedManager.AddItem(item);
+            return true;
+        }
+
+        return false;
+    }
+
+    private bool IsSubTypeSupported(BaseItem item)
+    {
+        var subType = TypeOfNotification.ToNotificationSubType(item);
+        if (subType == null)
+        {
+            _logger.LogWarning("{PluginName}: Notification for media type '{MediaType}' is not supported", typeof(Plugin).Name, item.GetType().ToString());
+            return false;
+        }
+
+        return true;
     }
 }

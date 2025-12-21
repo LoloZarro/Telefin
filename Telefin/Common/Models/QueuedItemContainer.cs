@@ -1,16 +1,25 @@
 using System;
 using System.Collections.Generic;
-using Telefin.Common.Enums;
 using MediaBrowser.Controller.Entities;
+using Telefin.Common.Enums;
 
 namespace Telefin.Common.Models;
 
 public sealed class QueuedItemContainer
 {
-    public QueuedItemContainer(Guid itemId, MediaSubType kind)
+    public QueuedItemContainer(Guid itemId, MediaType mediaType, BaseItem? item = null)
     {
         ItemId = itemId;
-        MediaType = kind;
+        MediaType = mediaType;
+        RetryCount = 0;
+        BaseItem = item;
+    }
+
+    public QueuedItemContainer(BaseItem item, MediaType mediaType)
+    {
+        BaseItem = item;
+        ItemId = item.Id;
+        MediaType = mediaType;
         RetryCount = 0;
     }
 
@@ -18,7 +27,7 @@ public sealed class QueuedItemContainer
 
     public int RetryCount { get; set; }
 
-    public MediaSubType MediaType { get; init; } = MediaSubType.Unknown;
+    public MediaType MediaType { get; init; } = MediaType.Unknown;
 
     public BaseItem? BaseItem { get; set; }
 
@@ -28,7 +37,7 @@ public sealed class QueuedItemContainer
 
     public void AddChildren(IEnumerable<Guid> ids)
     {
-        foreach (var id in ids)
+        foreach (var id in ids ?? [])
         {
             ChildItemIds.Add(id);
         }

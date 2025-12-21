@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
@@ -13,12 +12,12 @@ using Telefin.Common.Enums;
 using Telefin.Common.Extensions;
 using Telefin.Common.Models;
 using Telefin.Helper;
+using Telefin.Notifiers.ItemAddedNotifier;
 
 namespace Telefin.Notifiers.ItemDeletedNotifier;
 
 public class ItemDeletedManager : IItemDeletedManager
 {
-    private const int MaxRetries = 10;
     private const NotificationType TypeOfNotification = NotificationType.ItemDeleted;
 
     private readonly ILogger<ItemDeletedManager> _logger;
@@ -49,90 +48,59 @@ public class ItemDeletedManager : IItemDeletedManager
         }
 
         var validatedQueue = PrepareQueueItemsForNotification(queueSnapshot);
-        var notificationCandidates = NotificationQueueHelper.EvaluateNotificationCandidates(validatedQueue);
 
         var scope = _applicationHost.ServiceProvider!.CreateAsyncScope();
         var notificationDispatcher = scope.ServiceProvider.GetRequiredService<NotificationDispatcher>();
 
         await using (scope.ConfigureAwait(false))
         {
-            foreach (var candidate in notificationCandidates)
+            foreach (var queueItem in validatedQueue)
             {
-                var itemIdToNotifyOn = candidate.ItemId;
-                var sourceIds = candidate.ChildItemIds.Append(itemIdToNotifyOn).ToHashSet(); // all queue items this notification consumes
-
-                // Item from the library will be present unless the container was created during evaluation of notification candidates (grouping)
-                var item = candidate.BaseItem ?? _libraryManager.GetItemById(itemIdToNotifyOn);
-                if (item is null) // Should technically not be possible anymore
+                var item = queueItem.BaseItem;
+                if (item is null)
                 {
-                    _logger.LogDebug("{PluginName} - {ClassName}: Item {ItemId} not found, removing from queue", typeof(Plugin).Name, nameof(ItemDeletedManager), itemIdToNotifyOn);
-                    MarkProcessed(sourceIds); // Drop all items related to this candidate
+                    _logger.LogDebug("{PluginName} - {ClassName}: Item {ItemId} not found, removing from queue", typeof(Plugin).Name, nameof(ItemAddedManager), queueItem.ItemId);
+                    MarkProcessed(queueItem.ItemId);
                     continue;
                 }
 
-                _logger.LogDebug("{PluginName} - {ClassName}: Processing notification for {ItemName} (consuming {Count} queued items)", typeof(Plugin).Name, nameof(ItemDeletedManager), item.Name, sourceIds.Count);
-
-                if (item.ProviderIds.Keys.Count == 0) // Should technically not be possible anymore
-                {
-                    if (ShouldRetry(sourceIds))
-                    {
-                        _logger.LogDebug("{PluginName} - {ClassName}: Requeue {ItemName}, no metadata yet (retry attempt for one of {Count} items)", typeof(Plugin).Name, nameof(ItemDeletedManager), item.Name, sourceIds.Count);
-                        IncrementRetry(sourceIds);
-                        continue;
-                    }
-
-                    _logger.LogWarning("{PluginName} - {ClassName}: Item {ItemName} has no metadata after {MaxRetries} retries; skipping notification", typeof(Plugin).Name, nameof(ItemDeletedManager), item.Name, MaxRetries);
-                    MarkProcessed(sourceIds); // Drop all items related to this candidate
-                    continue;
-                }
+                _logger.LogDebug("{PluginName} - {ClassName}: Processing notification for {ItemName}", typeof(Plugin).Name, nameof(ItemDeletedManager), item.Name);
 
                 await notificationDispatcher.DispatchNotificationsAsync(
                     TypeOfNotification,
                     item,
                     userId: string.Empty,
-                    subtype: TypeOfNotification.ToNotificationSubType(item)!) // Entry point already checks for null
+                    subtype: TypeOfNotification.ToNotificationSubType(item)!)
                     .ConfigureAwait(false);
 
-                MarkProcessed(sourceIds);
+                MarkProcessed(queueItem.ItemId);
             }
         }
     }
 
-    private KeyValuePair<Guid, QueuedItemContainer>[] PrepareQueueItemsForNotification(KeyValuePair<Guid, QueuedItemContainer>[] queue)
+    private QueuedItemContainer[] PrepareQueueItemsForNotification(KeyValuePair<Guid, QueuedItemContainer>[] queue)
     {
-        var filteredQueue = new List<KeyValuePair<Guid, QueuedItemContainer>>();
+        var filteredQueue = new List<QueuedItemContainer>();
 
         foreach (var item in queue)
         {
             var itemId = item.Key;
             var container = item.Value;
 
-            // Remove invalid items
-            var baseItem = _libraryManager.GetItemById(itemId);
-            if (baseItem is null)
+            if (container is null)
             {
-                _logger.LogDebug("{PluginName} - {ClassName}: Item {ItemId} not found, removing from queue", typeof(Plugin).Name, nameof(ItemDeletedManager), itemId);
-                MarkProcessed([itemId]);
                 continue;
             }
 
-            // Check if item metadata is present yet. We need it in order to group the items correctly later.
-            if (baseItem.ProviderIds.Count == 0)
+            // Check if item metadata is present yet. We need them to resolve placeholders.
+            if (container.BaseItem?.ProviderIds?.Count == 0)
             {
-                if (ShouldRetry([itemId]))
-                {
-                    _logger.LogDebug("{PluginName} - {ClassName}: Requeue {ItemName}, no metadata yet retry next run", typeof(Plugin).Name, nameof(ItemDeletedManager), baseItem.Name);
-                    IncrementRetry([itemId]);
-                    continue;
-                }
-
-                _logger.LogWarning("{PluginName} - {ClassName}: Item {ItemName} has no metadata after {MaxRetries} retries. Notification will be skipped for this item.", typeof(Plugin).Name, nameof(ItemDeletedManager), baseItem.Name, MaxRetries);
-                MarkProcessed([itemId]);
+                _logger.LogWarning("{PluginName} - {ClassName}: Item {ItemName} has no metadata. Notification will be skipped for this item.", typeof(Plugin).Name, nameof(ItemDeletedManager), container.BaseItem.Name);
+                MarkProcessed(itemId);
                 continue;
             }
 
-            container.BaseItem = baseItem; // Attach the fully featured item from the library
-            filteredQueue.Add(item);
+            filteredQueue.Add(container);
         }
 
         return filteredQueue.ToArray();
@@ -161,30 +129,8 @@ public class ItemDeletedManager : IItemDeletedManager
         }
     }
 
-    private void MarkProcessed(IEnumerable<Guid> itemIds)
+    private void MarkProcessed(Guid itemId)
     {
-        foreach (var id in itemIds)
-        {
-            _itemProcessQueue.TryRemove(id, out _);
-        }
-    }
-
-    private void IncrementRetry(IEnumerable<Guid> itemIds)
-    {
-        foreach (var id in itemIds)
-        {
-            if (_itemProcessQueue.TryGetValue(id, out var c))
-            {
-                c.RetryCount++;
-            }
-        }
-    }
-
-    private bool ShouldRetry(IEnumerable<Guid> itemIds)
-    {
-        // Retry as long as at least one item is under the retry limit
-        return itemIds.Any(id =>
-            _itemProcessQueue.TryGetValue(id, out var container) &&
-            container.RetryCount < MaxRetries);
+        _itemProcessQueue.TryRemove(itemId, out _);
     }
 }

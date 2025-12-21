@@ -47,7 +47,7 @@ public class ItemAddedNotifierEntryPoint : IHostedService
         }
 
         // Never notify on virtual items.
-        if (!item.IsVirtualItem && item is Movie or Series or Season or Episode or MusicAlbum or Audio or Book or AudioBook)
+        if (!item.IsVirtualItem && item is Movie or Series or Season or Episode or MusicAlbum or Audio or Book) // Audio covers AudioBook
         {
             _itemAddedManager.AddItem(item);
         }

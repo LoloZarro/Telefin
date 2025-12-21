@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
@@ -14,16 +15,22 @@ namespace Telefin.Helper
     {
         public static QueuedItemContainer CreateContainer(BaseItem item, ILibraryManager libraryManager)
         {
-            var kind = item switch
+            var mediaSubType = item switch
             {
-                Movie => MediaSubType.Movie,
-                Series => MediaSubType.Series,
-                Season => MediaSubType.Season,
-                Episode => MediaSubType.Episode,
-                _ => MediaSubType.Unknown
+                Movie => MediaType.Movie,
+                Series => MediaType.Series,
+                Season => MediaType.Season,
+                Episode => MediaType.Episode,
+                Video => MediaType.Video,
+                MusicAlbum => MediaType.MusicAlbum,
+                AudioBook => MediaType.AudioBook,
+                Audio => MediaType.Audio,
+                Book => MediaType.Book,
+
+                _ => MediaType.Unknown
             };
 
-            return new QueuedItemContainer(item.Id, kind);
+            return new QueuedItemContainer(item, mediaSubType);
         }
 
         /// <summary>
@@ -53,17 +60,17 @@ namespace Telefin.Helper
         {
             var items = queue?.Select(x => x.Value).Where(x => x is not null).ToArray() ?? []; // We only need the containers from here on
 
-            var movies = items.Where(x => x.MediaType == MediaSubType.Movie).ToArray();
-            var series = items.Where(x => x.MediaType == MediaSubType.Series).ToArray();
-            var seasons = items.Where(x => x.MediaType == MediaSubType.Season).ToArray();
-            var episodes = items.Where(x => x.MediaType == MediaSubType.Episode).ToArray();
+            var movies = items.Where(x => x.MediaType == MediaType.Movie).ToArray();
+            var series = items.Where(x => x.MediaType == MediaType.Series).ToArray();
+            var seasons = items.Where(x => x.MediaType == MediaType.Season).ToArray();
+            var episodes = items.Where(x => x.MediaType == MediaType.Episode).ToArray();
 
             var otherMediaItems = items
                 .Where(x =>
-                    x.MediaType != MediaSubType.Movie &&
-                    x.MediaType != MediaSubType.Series &&
-                    x.MediaType != MediaSubType.Season &&
-                    x.MediaType != MediaSubType.Episode)
+                    x.MediaType != MediaType.Movie &&
+                    x.MediaType != MediaType.Series &&
+                    x.MediaType != MediaType.Season &&
+                    x.MediaType != MediaType.Episode)
                 .ToArray();
 
             // Fast lookup, avoid constant iteration later on
@@ -87,7 +94,7 @@ namespace Telefin.Helper
                 {
                     if (eps.Length <= 1) { continue; } // Single episode, don't bundle
 
-                    seasonContainer = new QueuedItemContainer(seasonId, MediaSubType.Season);
+                    seasonContainer = new QueuedItemContainer(seasonId, MediaType.Season);
                     seasonById[seasonId] = seasonContainer; // add to fast lookup
                     createdSeasonCandidates.Add(seasonContainer);
                 }
@@ -114,7 +121,7 @@ namespace Telefin.Helper
                 {
                     if (seas.Length <= 1) { continue; }
 
-                    seriesContainer = new QueuedItemContainer(seriesId, MediaSubType.Series);
+                    seriesContainer = new QueuedItemContainer(seriesId, MediaType.Series);
                     seriesById[seriesId] = seriesContainer;
                     createdSeriesCandidates.Add(seriesContainer);
                 }

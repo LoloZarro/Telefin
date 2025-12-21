@@ -14,8 +14,8 @@
                         <h1 style="margin:0;">Telefin - Telegram Notifications</h1>
                         <div class="label" style="margin-top:.4em;">
                             Send Telegram notifications for Jellyfin events.
-                            Docs & examples on
-                            <a href="https://github.com/LoloZarro/Telefin" target="_blank" rel="noopener noreferrer">
+                            Full documentation can be found on the official Telefin 
+                            <a href="https://github.com/LoloZarro/Telefin/wiki" target="_blank" rel="noopener noreferrer">
                                 GitHub
                             </a>.
                         </div>
@@ -170,10 +170,10 @@
                         <div>
                             <h3 style="margin:0;">Notifications Events</h3>
                             <div class="label" style="margin-top:.35em;">
-                                Enable events and optionally customize the message template. Placeholder are surrounded by <code>{}</code>.<br>
-                                Message templates support <strong>HTML/Markdown formatting</strong>.<br>
-                                See all available placeholders per notification on
-                                <a href="https://github.com/LoloZarro/Telefin/blob/main/MessageTemplateGuide.md" target="_blank">GitHub</a>.
+                                Enable events and optionally customize the message template. Top level categories will enable/disable all its sub notification. It acts as master switch.<br>
+                                Message templates support <strong>HTML formatting</strong>.<br>
+                                See all available placeholders per notification type on
+                                <a href="https://github.com/LoloZarro/Telefin/wiki/Configuring-Message-Templates-with-Variables" target="_blank">GitHub</a>.
                             </div>
                         </div>
                     </div>
@@ -267,7 +267,7 @@
 
                             <div class="telefin-editor">
                                 <div class="telefin-mutedHint">
-                                    Template supports placeholders (e.g. <code>{eventArgs.Argument.Username}</code>).
+                                    Template supports placeholders (e.g. <code>{username}</code>).
                                 </div>
                                 <textarea data-name="txtTemplate" style="display:none;"></textarea>
                             </div>

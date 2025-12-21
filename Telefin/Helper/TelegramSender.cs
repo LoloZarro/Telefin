@@ -33,7 +33,7 @@ namespace Telefin.Helper
                 var parameters = new Dictionary<string, string>
                 {
                     { "chat_id", chatId },
-                    { "text", message },
+                    { "text", message ?? string.Empty },
                     { "parse_mode", "HTML" }
                 };
 
@@ -99,8 +99,8 @@ namespace Telefin.Helper
                 }
                 catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
                 {
-                    _logger.LogError(ex, "{PluginName}({NotificationType}): Error fetching image: {Url}", typeof(Plugin).Name, notificationType, imageUrl);
-                    return false;
+                    _logger.LogWarning(ex, "{PluginName}({NotificationType}): Error fetching image: {Url}. Falling back to regular message.", typeof(Plugin).Name, notificationType, imageUrl);
+                    return await SendMessageAsync(notificationType, caption ?? string.Empty, botToken, chatId, isSilentNotification, threadId).ConfigureAwait(false);
                 }
 
                 return await PostMultipartAsync(notificationType, endpoint, form).ConfigureAwait(false);
