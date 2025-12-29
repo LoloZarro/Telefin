@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Telefin.Common.Enums;
 using Telefin.Common.Extensions;
+using Telefin.Common.Models;
 using Telefin.NotificationContext;
 using Telefin.NotificationContext.Interface;
 
@@ -90,29 +91,33 @@ namespace Telefin.Helper
                 }
 
                 var botToken = userConfiguration.BotToken;
-                var chatIds = userConfiguration.ChatIds.Split(',').Where(id => !string.IsNullOrWhiteSpace(id)).Select(c => c.Trim());
                 var isSilentNotification = userConfiguration.SilentNotification;
-                var threadId = userConfiguration.ThreadId;
 
-                foreach (var chatId in chatIds)
+                var configuredChats = userConfiguration.ConfiguredChats.Where(c => !string.IsNullOrWhiteSpace(c.ChatId.Trim())) ?? new List<ConfiguredChat>();
+
+                foreach (var chat in configuredChats)
                 {
                     try
                     {
+                        var chatId = chat.ChatId.Trim();
+                        var threadId = string.IsNullOrWhiteSpace(chat.ThreadId) ? null : chat.ThreadId.Trim();
+
                         var imagePath = context?.GetImagePath();
+
                         if (string.IsNullOrWhiteSpace(imagePath))
                         {
-                            Task task = _sender.SendMessageAsync(notificationType.ToString(), message, botToken, chatId, isSilentNotification, threadId);
+                            Task task = _sender.SendMessageAsync(notificationType.ToString(), message, botToken, chatId, isSilentNotification, threadId ?? string.Empty);
                             tasks.Add(task);
                         }
                         else
                         {
-                            Task task = _sender.SendMessageWithPhotoAsync(notificationType.ToString(), message, imagePath, botToken, chatId, isSilentNotification, threadId);
+                            Task task = _sender.SendMessageWithPhotoAsync(notificationType.ToString(), message, imagePath, botToken, chatId, isSilentNotification, threadId ?? string.Empty);
                             tasks.Add(task);
                         }
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError("{PluginName}: An error occurred while sending a Telegram for user '{UserName}' in chat '{ChatId}' message: {ExceptionMessage}", Plugin.PluginName, userConfiguration.UserName, chatId, ex.Message);
+                        _logger.LogError("{PluginName}: An error occurred while sending a Telegram for user '{UserName}' in chat '{ChatId}' message: {ExceptionMessage}", Plugin.PluginName, userConfiguration.UserName, chat.ChatId, ex.Message);
                     }
                 }
             }
