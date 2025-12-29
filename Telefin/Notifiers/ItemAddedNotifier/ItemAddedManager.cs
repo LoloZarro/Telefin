@@ -39,17 +39,19 @@ public class ItemAddedManager : IItemAddedManager
 
     public async Task ProcessItemsAsync()
     {
-        _logger.LogDebug("{PluginName} - {ClassName}: Processing notification queue for recently added items...", typeof(Plugin).Name, nameof(ItemAddedManager));
+        _logger.LogDebug("{PluginName} - {ClassName}: Processing notification queue for recently added items...", Plugin.PluginName, nameof(ItemAddedManager));
 
         var queueSnapshot = _itemProcessQueue.ToArray();
         if (queueSnapshot.Length == 0)
         {
-            _logger.LogInformation("{PluginName} - {ClassName}: No recently added items to process in the queue", typeof(Plugin).Name, nameof(ItemAddedManager));
+            _logger.LogInformation("{PluginName} - {ClassName}: No recently added items to process in the queue", Plugin.PluginName, nameof(ItemAddedManager));
             return;
         }
 
         var validatedQueue = PrepareQueueItemsForNotification(queueSnapshot);
         var notificationCandidates = NotificationQueueHelper.EvaluateNotificationCandidates(validatedQueue);
+
+        _logger.LogInformation("{PluginName} - {ClassName}: {Amount} notifications are ready to be sent out.", Plugin.PluginName, nameof(ItemAddedManager), notificationCandidates.Count);
 
         var scope = _applicationHost.ServiceProvider!.CreateAsyncScope();
         var notificationDispatcher = scope.ServiceProvider.GetRequiredService<NotificationDispatcher>();
@@ -65,23 +67,23 @@ public class ItemAddedManager : IItemAddedManager
                 var item = candidate.BaseItem ?? _libraryManager.GetItemById(itemIdToNotifyOn);
                 if (item is null) // Should technically not be possible anymore
                 {
-                    _logger.LogDebug("{PluginName} - {ClassName}: Item {ItemId} not found, removing from queue", typeof(Plugin).Name, nameof(ItemAddedManager), itemIdToNotifyOn);
+                    _logger.LogDebug("{PluginName} - {ClassName}: Item {ItemId} not found, removing from queue", Plugin.PluginName, nameof(ItemAddedManager), itemIdToNotifyOn);
                     MarkProcessed(sourceIds); // Drop all items related to this candidate
                     continue;
                 }
 
-                _logger.LogDebug("{PluginName} - {ClassName}: Processing notification for {ItemName} (consuming {Count} queued items)", typeof(Plugin).Name, nameof(ItemAddedManager), item.Name, sourceIds.Count);
+                _logger.LogDebug("{PluginName} - {ClassName}: Processing notification for {ItemName} (consuming {Count} queued items)", Plugin.PluginName, nameof(ItemAddedManager), item.Name, sourceIds.Count);
 
                 if (item.ProviderIds.Keys.Count == 0) // Should technically not be possible anymore
                 {
                     if (ShouldRetry(sourceIds))
                     {
-                        _logger.LogDebug("{PluginName} - {ClassName}: Requeue {ItemName}, no metadata yet (retry attempt for one of {Count} items)", typeof(Plugin).Name, nameof(ItemAddedManager), item.Name, sourceIds.Count);
+                        _logger.LogDebug("{PluginName} - {ClassName}: Requeue {ItemName}, no metadata yet (retry attempt for one of {Count} items)", Plugin.PluginName, nameof(ItemAddedManager), item.Name, sourceIds.Count);
                         IncrementRetry(sourceIds);
                         continue;
                     }
 
-                    _logger.LogWarning("{PluginName} - {ClassName}: Item {ItemName} has no metadata after {MaxRetries} retries; skipping notification", typeof(Plugin).Name, nameof(ItemAddedManager), item.Name, MaxRetries);
+                    _logger.LogWarning("{PluginName} - {ClassName}: Item {ItemName} has no metadata after {MaxRetries} retries; skipping notification", Plugin.PluginName, nameof(ItemAddedManager), item.Name, MaxRetries);
                     MarkProcessed(sourceIds); // Drop all items related to this candidate
                     continue;
                 }
@@ -111,7 +113,7 @@ public class ItemAddedManager : IItemAddedManager
             var baseItem = _libraryManager.GetItemById(itemId);
             if (baseItem is null)
             {
-                _logger.LogDebug("{PluginName} - {ClassName}: Item {ItemId} not found, removing from queue", typeof(Plugin).Name, nameof(ItemAddedManager), itemId);
+                _logger.LogDebug("{PluginName} - {ClassName}: Item {ItemId} not found, removing from queue", Plugin.PluginName, nameof(ItemAddedManager), itemId);
                 MarkProcessed([itemId]);
                 continue;
             }
@@ -121,12 +123,12 @@ public class ItemAddedManager : IItemAddedManager
             {
                 if (ShouldRetry([itemId]))
                 {
-                    _logger.LogDebug("{PluginName} - {ClassName}: Requeue {ItemName}, no metadata yet retry next run", typeof(Plugin).Name, nameof(ItemAddedManager), baseItem.Name);
+                    _logger.LogDebug("{PluginName} - {ClassName}: Requeue {ItemName}, no metadata yet retry next run", Plugin.PluginName, nameof(ItemAddedManager), baseItem.Name);
                     IncrementRetry([itemId]);
                     continue;
                 }
 
-                _logger.LogWarning("{PluginName} - {ClassName}: Item {ItemName} has no metadata after {MaxRetries} retries. Notification will be skipped for this item.", typeof(Plugin).Name, nameof(ItemAddedManager), baseItem.Name, MaxRetries);
+                _logger.LogWarning("{PluginName} - {ClassName}: Item {ItemName} has no metadata after {MaxRetries} retries. Notification will be skipped for this item.", Plugin.PluginName, nameof(ItemAddedManager), baseItem.Name, MaxRetries);
                 MarkProcessed([itemId]);
                 continue;
             }
@@ -144,7 +146,7 @@ public class ItemAddedManager : IItemAddedManager
 
         if (!options.Enabled)
         {
-            _logger.LogDebug("Not queueing {ItemName} for notification - library is disabled", item.Name);
+            _logger.LogDebug("{PluginName}: Not queueing {ItemName} for notification, library is disabled", Plugin.PluginName, item.Name);
             return;
         }
 
@@ -152,12 +154,12 @@ public class ItemAddedManager : IItemAddedManager
 
         if (_itemProcessQueue.TryAdd(item.Id, container))
         {
-            _logger.LogDebug("Queued {ItemName} ({Kind}) for notification", item.Name, container.MediaType);
+            _logger.LogDebug("{PluginName}: Queued {ItemName} ({Kind}) for notification", Plugin.PluginName, item.Name, container.MediaType);
         }
         else
         {
             // Expect duplicate events for same item.
-            _logger.LogDebug("Already queued {ItemName} ({Kind}) - skipping duplicate", item.Name, container.MediaType);
+            _logger.LogDebug("{PluginName}: Already queued {ItemName} ({Kind}), skipping duplicate", Plugin.PluginName, item.Name, container.MediaType);
         }
     }
 

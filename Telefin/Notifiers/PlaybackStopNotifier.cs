@@ -31,7 +31,7 @@ public class PlaybackStopNotifier : IEventConsumer<PlaybackStopEventArgs>
         var subType = TypeOfNotification.ToNotificationSubType(eventArgs.Item);
         if (subType == null)
         {
-            _logger.LogWarning("{PluginName}: Notification for media type '{MediaType}' is not supported", typeof(Plugin).Name, eventArgs.Item.GetType().ToString());
+            _logger.LogWarning("{PluginName}: Notification for media type '{MediaType}' is not supported", Plugin.PluginName, eventArgs.Item.GetType().ToString());
             return;
         }
 

@@ -12,6 +12,8 @@ namespace Telefin;
 
 public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
 {
+    public const string PluginName = "Telefin";
+
     private readonly ILogger<Plugin> _logger;
 
     public Plugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer, ILogger<Plugin> logger)
@@ -25,7 +27,7 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
 
     public static PluginConfiguration Config => Instance!.Configuration;
 
-    public override string Name => "Telefin";
+    public override string Name => PluginName;
 
     public override Guid Id => Guid.Parse("91ce115a-3f38-49bc-b36c-0f688b1495c7");
 

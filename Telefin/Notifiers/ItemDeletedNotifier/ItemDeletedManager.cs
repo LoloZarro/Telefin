@@ -38,16 +38,18 @@ public class ItemDeletedManager : IItemDeletedManager
 
     public async Task ProcessItemsAsync()
     {
-        _logger.LogDebug("{PluginName} - {ClassName}: Processing notification queue for recently deleted items...", typeof(Plugin).Name, nameof(ItemDeletedManager));
+        _logger.LogDebug("{PluginName} - {ClassName}: Processing notification queue for recently deleted items...", Plugin.PluginName, nameof(ItemDeletedManager));
 
         var queueSnapshot = _itemProcessQueue.ToArray();
         if (queueSnapshot.Length == 0)
         {
-            _logger.LogInformation("{PluginName} - {ClassName}: No recently deleted items to process in the queue", typeof(Plugin).Name, nameof(ItemDeletedManager));
+            _logger.LogInformation("{PluginName} - {ClassName}: No recently deleted items to process in the queue", Plugin.PluginName, nameof(ItemDeletedManager));
             return;
         }
 
         var validatedQueue = PrepareQueueItemsForNotification(queueSnapshot);
+
+        _logger.LogInformation("{PluginName} - {ClassName}: {Amount} notifications are ready to be sent out.", Plugin.PluginName, nameof(ItemAddedManager), validatedQueue.Length);
 
         var scope = _applicationHost.ServiceProvider!.CreateAsyncScope();
         var notificationDispatcher = scope.ServiceProvider.GetRequiredService<NotificationDispatcher>();
@@ -59,12 +61,12 @@ public class ItemDeletedManager : IItemDeletedManager
                 var item = queueItem.BaseItem;
                 if (item is null)
                 {
-                    _logger.LogDebug("{PluginName} - {ClassName}: Item {ItemId} not found, removing from queue", typeof(Plugin).Name, nameof(ItemAddedManager), queueItem.ItemId);
+                    _logger.LogDebug("{PluginName} - {ClassName}: Item {ItemId} not found, removing from queue", Plugin.PluginName, nameof(ItemAddedManager), queueItem.ItemId);
                     MarkProcessed(queueItem.ItemId);
                     continue;
                 }
 
-                _logger.LogDebug("{PluginName} - {ClassName}: Processing notification for {ItemName}", typeof(Plugin).Name, nameof(ItemDeletedManager), item.Name);
+                _logger.LogDebug("{PluginName} - {ClassName}: Processing notification for {ItemName}", Plugin.PluginName, nameof(ItemDeletedManager), item.Name);
 
                 await notificationDispatcher.DispatchNotificationsAsync(
                     TypeOfNotification,
@@ -95,7 +97,7 @@ public class ItemDeletedManager : IItemDeletedManager
             // Check if item metadata is present yet. We need them to resolve placeholders.
             if (container.BaseItem?.ProviderIds?.Count == 0)
             {
-                _logger.LogWarning("{PluginName} - {ClassName}: Item {ItemName} has no metadata. Notification will be skipped for this item.", typeof(Plugin).Name, nameof(ItemDeletedManager), container.BaseItem.Name);
+                _logger.LogWarning("{PluginName} - {ClassName}: Item {ItemName} has no metadata. Notification will be skipped for this item.", Plugin.PluginName, nameof(ItemDeletedManager), container.BaseItem.Name);
                 MarkProcessed(itemId);
                 continue;
             }
