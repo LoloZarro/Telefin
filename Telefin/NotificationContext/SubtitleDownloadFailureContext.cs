@@ -24,7 +24,6 @@ namespace Telefin.NotificationContext
             data["{errorMessage}"] = _eventArgs.Exception.Message;
             data["{itemTitle}"] = _item.GetPropertySafely<string?>("Name");
             data["{itemYear}"] = _item.GetPropertySafely<string?>("ProductionYear");
-            data["{mediaType}"] = _item.GetPropertySafely<string?>("MediaType");
             data["{itemOverview}"] = _item.GetPropertySafely<string?>("Overview");
             data["{itemGenres}"] = _item.GetGenres();
             data["{itemDuration}"] = _item.GetDuration();

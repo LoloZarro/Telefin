@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.Globalization;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using Telefin.Common.Enums;
 using Telefin.Common.Extensions;
 
 namespace Telefin.NotificationContext
@@ -25,13 +27,19 @@ namespace Telefin.NotificationContext
             data["{playMethod}"] = _eventArgs.Session?.PlayState?.PlayMethod?.ToString();
             data["{itemTitle}"] = _item.GetPropertySafely<string?>("Name");
             data["{itemYear}"] = _item.GetPropertySafely<string?>("ProductionYear");
-            data["{mediaType}"] = _item.GetPropertySafely<string?>("MediaType");
             data["{itemOverview}"] = _item.GetPropertySafely<string?>("Overview");
             data["{itemGenres}"] = _item.GetGenres();
             data["{itemDuration}"] = _item.GetDuration();
             data["{seriesTitle}"] = _item.GetPropertySafely<string?>("SeriesName");
             data["{seasonNumber}"] = _item.GetSeasonNumber();
             data["{episodeNumber}"] = _item.GetEpisodeNumber();
+            data["{imdbLink}"] = _item.GetProviderLink(RatingProvider.Imdb);
+            data["{tvdbLink}"] = _item.GetProviderLink(RatingProvider.Tvdb);
+            data["{tmdbLink}"] = _item.GetProviderLink(RatingProvider.Tmdb);
+            data["{communityRating}"] = _item.GetCommunityRating()?.ToString(CultureInfo.InvariantCulture);
+            data["{criticRating}"] = _item.GetCriticRating()?.ToString(CultureInfo.InvariantCulture);
+            data["{ageRating}"] = _item.GetAgeRating();
+            data["{studios}"] = _item.GetStudios();
 
             return data;
         }

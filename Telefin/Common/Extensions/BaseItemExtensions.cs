@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
+using Telefin.Common.Enums;
 using Telefin.Helper;
 
 namespace Telefin.Common.Extensions
@@ -26,44 +29,40 @@ namespace Telefin.Common.Extensions
 
         public static string? GetSeriesTitle(this BaseItem? item)
         {
-            if (item == null)
+            if (item == null || item is Movie)
             {
                 return null;
             }
 
-            // For episodes/seasons: item.Series.Name
-            var series = item.GetPropertySafely<string?>("Series");
-            if (series != null)
+            if (item is Series series)
             {
-                return series.GetPropertySafely<string?>("Name");
+                return item.GetPropertySafely<string>("Name");
             }
 
-            // For series items themselves: use the item name as series title
-            // (you can add additional checks on type name if you want)
-            return item.GetPropertySafely<string>("Name");
+            return item.GetPropertySafely<string?>("SeriesName");
         }
 
         public static string? GetSeasonNumber(this BaseItem? item)
         {
-            if (item == null)
+            if (item == null || item is not Season)
             {
                 return null;
             }
 
-            // For episodes: episode.Season.IndexNumber
-            var seasonObj = item.GetPropertySafely<Season>("Season");
-            if (seasonObj != null)
+            int seasonNumber;
+
+            var season = item.GetPropertySafely<Season>("Season");
+            if (season != null)
             {
-                var seasonIndex = seasonObj.GetPropertySafely<string>("IndexNumber");
-                if (seasonIndex != null && int.TryParse(seasonIndex.ToString(), out var sn))
+                var seasonIndex = season.GetPropertySafely<string>("IndexNumber");
+                if (seasonIndex != null && int.TryParse(seasonIndex.ToString(), out seasonNumber))
                 {
-                    return sn.ToString("00", CultureInfo.InvariantCulture);
+                    return seasonNumber.ToString("00", CultureInfo.InvariantCulture);
                 }
             }
 
-            // For season items: season.IndexNumber
             var index = item.GetPropertySafely<string>("IndexNumber");
-            if (index != null && int.TryParse(index.ToString(), out var seasonNumber))
+            if (index != null && int.TryParse(index.ToString(), out seasonNumber))
             {
                 return seasonNumber.ToString("00", CultureInfo.InvariantCulture);
             }
@@ -73,16 +72,52 @@ namespace Telefin.Common.Extensions
 
         public static string? GetEpisodeNumber(this BaseItem? item)
         {
-            if (item == null)
+            if (item == null || item is not Episode)
             {
                 return null;
             }
 
-            // For episodes: episode.IndexNumber
             var index = item.GetPropertySafely<string>("IndexNumber");
             if (index != null && int.TryParse(index.ToString(), out var episodeNumber))
             {
                 return episodeNumber.ToString("00", CultureInfo.InvariantCulture);
+            }
+
+            return null;
+        }
+
+        public static string? GetEpisodeAmount(this BaseItem? item)
+        {
+            if (item == null || item is not Series || item is not Season)
+            {
+                return null;
+            }
+
+            BaseItem[]? episodes = null;
+
+            if (item is Series series)
+            {
+                var seasons = series.GetPropertySafely<List<BaseItem>?>("Children");
+                episodes = seasons?.SelectMany(season => season.GetPropertySafely<BaseItem[]>("Children") ?? Array.Empty<BaseItem>())?.ToArray();
+            }
+            else
+            {
+                episodes = item.GetPropertySafely<BaseItem[]?>("Children");
+            }
+
+            return episodes?.Length.ToString(CultureInfo.InvariantCulture);
+        }
+
+        public static string? GetSeasonAmount(this BaseItem? item)
+        {
+            if (item == null || item is not Series)
+            {
+                return null;
+            }
+
+            if (item is Series series)
+            {
+                return series.GetPropertySafely<BaseItem[]?>("Children")?.Length.ToString(CultureInfo.InvariantCulture);
             }
 
             return null;
@@ -97,7 +132,12 @@ namespace Telefin.Common.Extensions
 
             var genres = item.GetPropertySafely<string[]?>("Genres");
 
-            if (genres == null)
+            if (genres == null || genres.Length <= 0)
+            {
+                genres = item.GetPropertySafely<BaseItem>("DisplayParent")?.GetPropertySafely<string[]?>("Genres");
+            }
+
+            if (genres == null || genres.Length <= 0)
             {
                 return null;
             }
@@ -120,7 +160,7 @@ namespace Telefin.Common.Extensions
                 return null;
             }
 
-            // ticks → TimeSpan. Jellyfin uses 10,000 ticks per millisecond (i.e. TimeSpan).
+            // ticks -> TimeSpan. Jellyfin uses 10,000 ticks per millisecond
             var ts = TimeSpan.FromTicks(runTimeTicks.Value);
 
             if (ts.TotalMinutes < 1)
@@ -134,6 +174,113 @@ namespace Telefin.Common.Extensions
             }
 
             return $"{(int)ts.TotalHours}h {ts.Minutes}m";
+        }
+
+        public static string? GetProviderLink(this BaseItem? item, RatingProvider provider)
+        {
+            if (item == null)
+            {
+                return null;
+            }
+
+            (BaseItem? source, bool isSeries) = item switch
+            {
+                Movie => (item, false),
+                Series or Episode => (item, true),
+                Season => (item.GetPropertySafely<BaseItem?>("DisplayParent"), true),
+                _ => (null, false)
+            };
+
+            if (source == null)
+            {
+                return null;
+            }
+
+            var providers = source.GetPropertySafely<IDictionary<string, string>?>("ProviderIds");
+
+            if (providers == null || providers.Count <= 0)
+            {
+                return null;
+            }
+
+            if (!providers.TryGetValue(provider.ToString(), out var id) || string.IsNullOrWhiteSpace(id))
+            {
+                return null;
+            }
+
+            return provider switch
+            {
+                RatingProvider.Imdb => $"https://imdb.com/title/{id}",
+                RatingProvider.Tvdb => $"https://www.thetvdb.com/dereferrer/{(isSeries ? ((item is Episode) ? "episode" : "series") : "movies")}/{id}",
+                RatingProvider.Tmdb => $"https://www.themoviedb.org/{(isSeries ? "tv" : "movie")}/{id}",
+                _ => null
+            };
+        }
+
+        public static float? GetCriticRating(this BaseItem? item)
+        {
+            if (item == null)
+            {
+                return null;
+            }
+
+            if (item is Season)
+            {
+                return item.GetPropertySafely<Series?>("DisplayParent")?.GetPropertySafely<float?>("CriticRating");
+            }
+
+            return item.GetPropertySafely<float?>("CriticRating");
+        }
+
+        public static float? GetCommunityRating(this BaseItem? item)
+        {
+            if (item == null)
+            {
+                return null;
+            }
+
+            if (item is Season)
+            {
+                return item.GetPropertySafely<Series?>("DisplayParent")?.GetPropertySafely<float?>("CommunityRating");
+            }
+
+            return item.GetPropertySafely<float?>("CommunityRating");
+        }
+
+        public static string? GetAgeRating(this BaseItem? item)
+        {
+            if (item == null)
+            {
+                return null;
+            }
+
+            return item.GetPropertySafely<string?>("OfficialRatingForComparison");
+        }
+
+        public static string? GetStudios(this BaseItem? item)
+        {
+            if (item == null)
+            {
+                return null;
+            }
+
+            var source = item switch
+            {
+                Movie => item,
+                Series => item,
+                Season => item.GetPropertySafely<Series?>("DisplayParent"),
+                Episode => item.GetPropertySafely<Series?>("DisplayParent")?.GetPropertySafely<Series?>("DisplayParent"),
+                _ => null,
+            };
+
+            var studios = source?.GetPropertySafely<string[]?>("Studios")?.Where(s => !string.IsNullOrWhiteSpace(s));
+
+            if (studios == null)
+            {
+                return null;
+            }
+
+            return string.Join(", ", studios);
         }
 
         private static string? BuildImageUrl(Guid? itemId)
