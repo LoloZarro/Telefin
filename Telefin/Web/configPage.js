@@ -215,7 +215,7 @@ export default function (view) {
                 if (userConfig) {
                     document.querySelector('#ServerUrl').value = config.ServerUrl;
                     document.querySelector('#BotToken').value = userConfig.BotToken;
-                    document.querySelector('#ChatId').value = userConfig.ChatId;
+                    document.querySelector('#ChatIds').value = userConfig.ChatIds;
                     document.querySelector('#ThreadId').value = userConfig.ThreadId;
                     document.querySelector('#EnableUser').checked = userConfig.EnableUser;
                     document.querySelector('#SilentNotification').checked = userConfig.SilentNotification;
@@ -224,7 +224,7 @@ export default function (view) {
                 } else {
                     document.querySelector('#ServerUrl').value = config.ServerUrl;
                     document.querySelector('#BotToken').value = '';
-                    document.querySelector('#ChatId').value = '';
+                    document.querySelector('#ChatIds').value = '';
                     document.querySelector('#ThreadId').value = '';
                     document.querySelector('#EnableUser').checked = false;
                     document.querySelector('#SilentNotification').checked = false;
@@ -247,7 +247,7 @@ export default function (view) {
                     if (userConfig) {
                         config.ServerUrl = document.querySelector('#ServerUrl').value;
                         userConfig.BotToken = document.querySelector('#BotToken').value;
-                        userConfig.ChatId = document.querySelector('#ChatId').value;
+                        userConfig.ChatIds = document.querySelector('#ChatIds').value;
                         userConfig.ThreadId = document.querySelector('#ThreadId').value;
                         userConfig.EnableUser = document.querySelector('#EnableUser').checked;
                         userConfig.SilentNotification = document.querySelector('#SilentNotification').checked;
@@ -259,7 +259,7 @@ export default function (view) {
                             UserId: TelefinConfig.user.getSelectedUserId(),
                             UserName: document.querySelector('#userToConfigure').selectedOptions[0].text,
                             BotToken: document.querySelector('#BotToken').value,
-                            ChatId: document.querySelector('#ChatId').value,
+                            ChatId: document.querySelector('#ChatIds').value,
                             ThreadId: document.querySelector('#ThreadId').value,
                             EnableUser: document.querySelector('#EnableUser').checked,
                             SilentNotification: document.querySelector('#SilentNotification').checked,
@@ -290,7 +290,7 @@ export default function (view) {
                     }
                     const params = {
                         botToken: userConfig.BotToken,
-                        chatId: userConfig.ChatId,
+                        chatIds: userConfig.ChatIds,
                         threadId: threadId,
                     };
                     const url = new URL('/TelefinApi/SmokeTest', window.location.origin);

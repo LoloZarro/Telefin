@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Telefin.Common.Enums;
@@ -89,27 +90,30 @@ namespace Telefin.Helper
                 }
 
                 var botToken = userConfiguration.BotToken;
-                var chatId = userConfiguration.ChatId;
+                var chatIds = userConfiguration.ChatIds.Split(',').Where(id => !string.IsNullOrWhiteSpace(id)).Select(c => c.Trim());
                 var isSilentNotification = userConfiguration.SilentNotification;
                 var threadId = userConfiguration.ThreadId;
 
-                try
+                foreach (var chatId in chatIds)
                 {
-                    var imagePath = context?.GetImagePath();
-                    if (string.IsNullOrWhiteSpace(imagePath))
+                    try
                     {
-                        Task task = _sender.SendMessageAsync(notificationType.ToString(), message, botToken, chatId, isSilentNotification, threadId);
-                        tasks.Add(task);
+                        var imagePath = context?.GetImagePath();
+                        if (string.IsNullOrWhiteSpace(imagePath))
+                        {
+                            Task task = _sender.SendMessageAsync(notificationType.ToString(), message, botToken, chatId, isSilentNotification, threadId);
+                            tasks.Add(task);
+                        }
+                        else
+                        {
+                            Task task = _sender.SendMessageWithPhotoAsync(notificationType.ToString(), message, imagePath, botToken, chatId, isSilentNotification, threadId);
+                            tasks.Add(task);
+                        }
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        Task task = _sender.SendMessageWithPhotoAsync(notificationType.ToString(), message, imagePath, botToken, chatId, isSilentNotification, threadId);
-                        tasks.Add(task);
+                        _logger.LogError("{PluginName}: An error occurred while sending a Telegram for user '{UserName}' in chat '{ChatId}' message: {ExceptionMessage}", Plugin.PluginName, userConfiguration.UserName, chatId, ex.Message);
                     }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError("{PluginName}: An error occurred while sending a Telegram message: {ExceptionMessage}", typeof(Plugin).Name, ex.Message);
                 }
             }
 

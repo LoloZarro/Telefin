@@ -5,7 +5,7 @@ public class UserConfiguration
     public string UserId { get; set; } = string.Empty;
     public string UserName { get; set; } = string.Empty;
     public string BotToken { get; set; } = string.Empty;
-    public string ChatId { get; set; } = string.Empty;
+    public string ChatIds { get; set; } = string.Empty;
     public string ThreadId { get; set; } = string.Empty;
 
     public bool EnableUser { get; set; }

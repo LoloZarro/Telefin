@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -25,29 +26,36 @@ public class TelefinApiController : ControllerBase
     [HttpGet("SmokeTest")]
     public async Task<ActionResult<string>> SmokeTest(
         [FromQuery] string botToken,
-        [FromQuery] string chatId,
+        [FromQuery] string chatIds,
         [FromQuery] string threadId)
     {
         string message =
             "[Telefin] Test message:\n\n" +
             "🎉 Great news! Your configuration has been validated successfully! 🚀";
 
-        bool result = await _sender.SendMessageAsync(
-            "Test",
-            message,
-            botToken,
-            chatId,
-            false,
-            threadId)
-            .ConfigureAwait(false);
+        var results = new List<bool>();
 
-        if (result)
+        var chats = chatIds.Split(',').Where(id => !string.IsNullOrWhiteSpace(id)).Select(c => c.Trim());
+
+        foreach (var chatId in chats)
         {
-            _logger.LogInformation("{PluginName}: Test notification sent successfully!", typeof(Plugin).Name);
+            results.Add(await _sender.SendMessageAsync(
+                "Test",
+                message,
+                botToken,
+                chatId,
+                false,
+                threadId)
+                .ConfigureAwait(false));
+        }
+
+        if (results.Any(r => !r))
+        {
+            _logger.LogInformation("{PluginName}: Test notification sent successfully!", Plugin.PluginName);
             return Ok("Success!");
         }
 
-        _logger.LogError("{PluginName}: Unable to send test notification!",typeof(Plugin).Name);
+        _logger.LogError("{PluginName}: Unable to send test some or all notifications!",Plugin.PluginName);
         return BadRequest("Unsuccessful, check logs for details.");
     }
 
