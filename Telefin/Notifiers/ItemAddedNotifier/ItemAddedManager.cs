@@ -51,7 +51,7 @@ public class ItemAddedManager : IItemAddedManager
         var validatedQueue = PrepareQueueItemsForNotification(queueSnapshot);
         var notificationCandidates = NotificationQueueHelper.EvaluateNotificationCandidates(validatedQueue);
 
-        _logger.LogInformation("{PluginName} - {ClassName}: {Amount} notifications are ready to be sent out.", Plugin.PluginName, nameof(ItemAddedManager), notificationCandidates.Count);
+        _logger.LogInformation("{PluginName} - {ClassName}: {Amount} notification(s) ready to be sent out.", Plugin.PluginName, nameof(ItemAddedManager), notificationCandidates.Count);
 
         var scope = _applicationHost.ServiceProvider!.CreateAsyncScope();
         var notificationDispatcher = scope.ServiceProvider.GetRequiredService<NotificationDispatcher>();

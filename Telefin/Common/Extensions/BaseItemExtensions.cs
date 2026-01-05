@@ -44,7 +44,7 @@ namespace Telefin.Common.Extensions
 
         public static string? GetSeasonNumber(this BaseItem? item)
         {
-            if (item == null || item is not Season)
+            if (item == null || (item is not Season && item is not Episode))
             {
                 return null;
             }
@@ -88,7 +88,7 @@ namespace Telefin.Common.Extensions
 
         public static string? GetEpisodeAmount(this BaseItem? item)
         {
-            if (item == null || item is not Series || item is not Season)
+            if (item == null || (item is not Series && item is not Season))
             {
                 return null;
             }
@@ -97,7 +97,7 @@ namespace Telefin.Common.Extensions
 
             if (item is Series series)
             {
-                var seasons = series.GetPropertySafely<List<BaseItem>?>("Children");
+                var seasons = series.GetPropertySafely<BaseItem[]?>("Children");
                 episodes = seasons?.SelectMany(season => season.GetPropertySafely<BaseItem[]>("Children") ?? Array.Empty<BaseItem>())?.ToArray();
             }
             else
