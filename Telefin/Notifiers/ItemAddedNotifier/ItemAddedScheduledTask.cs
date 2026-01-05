@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Tasks;
 
 namespace Telefin.Notifiers.ItemAddedNotifier;
@@ -11,23 +10,19 @@ public class ItemAddedScheduledTask : IScheduledTask, IConfigurableScheduledTask
 {
     private const int RecheckIntervalSec = 60;
     private readonly IItemAddedManager _itemAddedManager;
-    private readonly ILocalizationManager _localizationManager;
 
-    public ItemAddedScheduledTask(
-        IItemAddedManager itemAddedManager,
-        ILocalizationManager localizationManager)
+    public ItemAddedScheduledTask(IItemAddedManager itemAddedManager)
     {
         _itemAddedManager = itemAddedManager;
-        _localizationManager = localizationManager;
     }
 
-    public string Name => "Telefin Item Added Notifier";
+    public string Name => "Added items notifier";
 
     public string Key => "Telefin";
 
     public string Description => "Processes all items added to the queue of items that have been added to the server since the last run, including items still pending, and notifies all configured users subscribed to the relevant events(Episode, Season, etc.)";
 
-    public string Category => _localizationManager.GetLocalizedString("TasksLibraryCategory");
+    public string Category => "Telefin";
 
     public bool IsHidden => false;
 
