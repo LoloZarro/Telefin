@@ -14,7 +14,7 @@
                         <h1 style="margin:0;">Telefin - Telegram Notifications</h1>
                         <div class="label" style="margin-top:.4em;">
                             Send Telegram notifications for Jellyfin events.
-                            Full documentation can be found on the official Telefin 
+                            Full documentation can be found on the official Telefin
                             <a href="https://github.com/LoloZarro/Telefin/wiki" target="_blank" rel="noopener noreferrer">
                                 GitHub
                             </a>.
@@ -25,7 +25,7 @@
                 <!-- Plugin-wide settings -->
                 <section class="verticalSection">
                     <div class="sectionTitleContainer flex align-items-center">
-                        <h2 style="margin:0;">Plugin</h2>
+                        <h2 style="margin:0;">General</h2>
                     </div>
 
                     <div class="checkboxContainer checkboxContainer-withDescription" style="margin-top:1em;">
@@ -91,18 +91,15 @@
                     </div>
 
                     <div class="inputContainer">
-                        <label class="inputLabel inputLabelUnfocused" for="ChatId">Chat ID</label>
-                        <input id="ChatId" name="ChatId" type="text" is="emby-input" />
-                        <div class="fieldDescription">
-                            Target chat ID (user, group, or channel) for notifications.
+                        <div class="flex align-items-center" style="gap:.5em;">
+                            <label class="inputLabel inputLabelUnfocused" style="margin:0;">Chats</label>
+                            <button id="addChatButton" is="emby-button" type="button" class="raised button emby-button" style="padding:.35em .6em; min-height:auto;">
+                                <span>+</span>
+                            </button>
                         </div>
-                    </div>
-
-                    <div class="inputContainer">
-                        <label class="inputLabel inputLabelUnfocused" for="ThreadId">Thread ID (optional)</label>
-                        <input id="ThreadId" name="ThreadId" type="text" is="emby-input" />
+                        <div id="ConfiguredChatsContainer" style="margin-top:.75em;"></div>
                         <div class="fieldDescription">
-                            Only needed if you use topics/threads in groups. Leave empty otherwise.
+                            Add one or more chat targets. Each chat can optionally specify a thread ID (used for groups that have multiple channels).
                         </div>
                     </div>
 
@@ -117,6 +114,24 @@
                         </div>
                     </div>
                 </section>
+
+
+                <!-- Chat row template -->
+                <template id="template-configured-chat">
+                    <div class="configured-chat-row" style="display:flex; gap:.75em; align-items:flex-end; margin-bottom:.75em;">
+                        <div class="inputContainer" style="flex:1; margin:0;">
+                            <label class="inputLabel inputLabelUnfocused">Chat ID</label>
+                            <input type="text" is="emby-input" data-name="ChatId" />
+                        </div>
+                        <div class="inputContainer" style="flex:1; margin:0;">
+                            <label class="inputLabel inputLabelUnfocused">Thread ID (optional)</label>
+                            <input type="text" is="emby-input" data-name="ThreadId" />
+                        </div>
+                        <button class="remove-chat-button raised emby-button" is="emby-button" type="button" style="padding:.35em .6em; min-height:auto;">
+                            <span>−</span>
+                        </button>
+                    </div>
+                </template>
 
                 <!-- Basic notification behavior -->
                 <section class="verticalSection" style="margin-top:2em;">
@@ -170,7 +185,7 @@
                         <div>
                             <h3 style="margin:0;">Notifications Events</h3>
                             <div class="label" style="margin-top:.35em;">
-                                Enable events and optionally customize the message template. Top level categories will enable/disable all its sub notification. It acts as master switch.<br>
+                                Enable events and optionally customize the message template. Top level categories will enable/disable all its sub notification, it acts as master switch.<br>
                                 Message templates support <strong>HTML formatting</strong>.<br>
                                 See all available placeholders per notification type on
                                 <a href="https://github.com/LoloZarro/Telefin/wiki/Configuring-Message-Templates-with-Variables" target="_blank">GitHub</a>.
@@ -201,10 +216,10 @@
                             padding: .85em 1em;
                         }
 
-                            .telefin-notifications .telefin-itemHeader .checkboxContainer {
-                                margin: 0;
-                                flex: 1;
-                            }
+                        .telefin-notifications .telefin-itemHeader .checkboxContainer {
+                            margin: 0;
+                            flex: 1;
+                        }
 
                         .telefin-notifications .telefin-actions {
                             display: flex;
@@ -218,21 +233,30 @@
                             display: none; /* JS toggles textarea; we also keep editor hidden by default */
                         }
 
-                            .telefin-notifications .telefin-editor textarea {
-                                width: 100%;
-                                min-height: 140px;
-                                resize: vertical;
-                                margin-top: .5em;
-                            }
+                        .telefin-notifications .telefin-editor textarea {
+                            width: 100%;
+                            min-height: 140px;
+                            resize: vertical;
+                            margin-top: .5em;
+                        }
+
+                        .telefin-notifications .telefin-children {
+                            padding: 0 1em 1em 1em;
+                            display: none;
+                        }
+
+                        .telefin-notifications .telefin-children .telefin-item {
+                            margin-top: .5em;
+                        }
 
                         .telefin-notifications .telefin-subtype {
                             margin-left: 1.25em;
                             border-left: 2px solid rgba(255,255,255,.10);
                         }
 
-                            .telefin-notifications .telefin-subtype .telefin-itemHeader {
-                                padding-left: .85em;
-                            }
+                        .telefin-notifications .telefin-subtype .telefin-itemHeader {
+                            padding-left: .85em;
+                        }
 
                         .telefin-notifications .telefin-mutedHint {
                             padding: 0 1em 1em 1em;
@@ -240,7 +264,6 @@
                             font-size: .95em;
                         }
 
-                        /* Optional: make action buttons less chunky */
                         .telefin-notifications .telefin-actions .emby-button {
                             margin: 0;
                         }
@@ -256,19 +279,28 @@
                                 </label>
 
                                 <div class="telefin-actions">
+                                    <!-- Shown only for top-level types that have subtypes -->
+                                    <button class="toggle-subtypes-button raised emby-button" is="emby-button" type="button" style="display:none;">
+                                        <span class="toggle-icon toggle-icon-expand">➕</span>
+                                        <span class="toggle-icon toggle-icon-collapse" style="display:none;">➖</span>
+                                        <span class="toogle-subtypes-button-text">Expand</span>
+                                    </button>
+
+                                    <!-- Shown only for types that support custom templates -->
+                                    <button class="reset-template-button raised emby-button" type="button" style="display:none;">
+                                        <span>Default</span>
+                                    </button>
                                     <button class="edit-template-button raised emby-button" is="emby-button" type="button">
                                         <span>Customize</span>
-                                    </button>
-                                    <button class="reset-template-button raised emby-button" type="button" style="display:none;">
-                                        <span>Reset</span>
                                     </button>
                                 </div>
                             </div>
 
+                            <!-- Subtypes live here (collapsed by default) -->
+                            <div class="telefin-children" data-name="subtypesContainer" style="display:none;"></div>
+
+                            <!-- Template editor (for types that support it) -->
                             <div class="telefin-editor">
-                                <div class="telefin-mutedHint">
-                                    Template supports placeholders (e.g. <code>{username}</code>).
-                                </div>
                                 <textarea data-name="txtTemplate" style="display:none;"></textarea>
                             </div>
                         </div>
@@ -294,11 +326,11 @@
                                 </label>
 
                                 <div class="telefin-actions">
+                                    <button class="reset-template-button raised emby-button" type="button" style="display:none;">
+                                        <span>Default</span>
+                                    </button>
                                     <button class="edit-template-button raised emby-button" is="emby-button" type="button">
                                         <span>Customize</span>
-                                    </button>
-                                    <button class="reset-template-button raised emby-button" type="button" style="display:none;">
-                                        <span>Reset</span>
                                     </button>
                                 </div>
                             </div>

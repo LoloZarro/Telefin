@@ -46,60 +46,87 @@ export default function (view) {
                 return await response.json();
             },
 
+
             loadNotificationTypes: function (userConfig) {
                 const temp = document.querySelector("#template-notification-type");
-                const temp_without_textarea = document.querySelector("#template-notification-type-without-textarea");
                 const subtemp = document.querySelector("#template-notification-subtype");
                 const container = document.querySelector("[data-name=notificationTypeContainer]");
                 container.innerHTML = '';
 
                 const notificationTypeKeys = Object.keys(TelefinConfig.notificationType.values).sort();
                 for (const key of notificationTypeKeys) {
-                    let template = temp.cloneNode(true).content;
-                    if (typeof TelefinConfig.notificationType.values[key] !== 'string') {
-                        template = temp_without_textarea.cloneNode(true).content;
-                    }
-                    const name = template.querySelector("[data-name=notificationTypeName]");
-                    const value = template.querySelector("[data-name=notificationTypeValue]");
+                    const def = TelefinConfig.notificationType.values[key];
 
-                    if (typeof TelefinConfig.notificationType.values[key] !== 'string') {
-                        name.innerText = TelefinConfig.notificationType.values[key][0];
-                    } else {
-                        name.innerText = TelefinConfig.notificationType.values[key];
-                        const textarea = template.querySelector('[data-name="txtTemplate"]');
+                    const fragment = temp.cloneNode(true).content;
+                    const name = fragment.querySelector("[data-name=notificationTypeName]");
+                    const value = fragment.querySelector("[data-name=notificationTypeValue]");
+                    const textarea = fragment.querySelector('[data-name="txtTemplate"]');
+                    const editor = fragment.querySelector('.telefin-editor');
+                    const editBtn = fragment.querySelector('.edit-template-button');
+                    const resetBtn = fragment.querySelector('.reset-template-button');
+                    const toggleBtn = fragment.querySelector('.toggle-subtypes-button');
+                    const children = fragment.querySelector('[data-name="subtypesContainer"]');
+
+                    value.dataset.value = key;
+                    value.checked = userConfig ? (userConfig[key] === true) : false;
+
+                    // Leaf notification types (support templates)
+                    if (typeof def === 'string') {
+                        name.innerText = def;
+
                         textarea.value = userConfig === null ? this.defaultMessages[key] : userConfig[key + 'StringMessage'];
                         textarea.dataset.value = key;
-                    }
-                    value.dataset.value = key;
-                    if (userConfig === null) {
-                        value.checked = false;
-                    } else {
-                        value.checked = userConfig[key] === true;
-                    }
-                    container.appendChild(template);
 
-                    // Notification subtypes
-                    if (typeof TelefinConfig.notificationType.values[key] !== 'string') {
-                        for (const subtype of TelefinConfig.notificationType.values[key].slice(1)) {
-                            template = subtemp.cloneNode(true).content;
-                            const name = template.querySelector("[data-name=notificationSubtypeName]");
-                            const value = template.querySelector("[data-name=notificationSubtypeValue]");
-                            const textarea = template.querySelector('[data-name="txtTemplate"]');
+                        // No subtypes for leaf types
+                        if (toggleBtn) toggleBtn.style.display = 'none';
+                        if (children) children.style.display = 'none';
+                    }
+                    // Top-level groups (expandable list of subtypes)
+                    else {
+                        name.innerText = def[0];
 
-                            name.innerText = subtype;
-                            const subkey = key + subtype.replace(/\s/g, '');
-                            value.dataset.value = subkey;
-                            textarea.dataset.value = subkey;
-                            if (userConfig === null) {
-                                value.checked = false;
-                                textarea.value = this.defaultMessages[subkey];
-                            } else {
-                                value.checked = userConfig[subkey] === true;
-                                textarea.value = userConfig[subkey + 'StringMessage'];
+                        // Hide template controls for group rows
+                        if (editBtn) editBtn.style.display = 'none';
+                        if (resetBtn) resetBtn.style.display = 'none';
+                        if (editor) editor.style.display = 'none';
+                        if (textarea) textarea.style.display = 'none';
+
+                        // Setup expand/collapse toggle (collapsed by default)
+                        if (toggleBtn) {
+                            toggleBtn.style.display = 'inline-block';
+                            const s = toggleBtn.querySelector('span');
+                        }
+
+                        // Build subtypes into the group's children container
+                        if (children) {
+                            children.style.display = 'none';
+
+                            for (const subtype of def.slice(1)) {
+                                const subFrag = subtemp.cloneNode(true).content;
+                                const subName = subFrag.querySelector("[data-name=notificationSubtypeName]");
+                                const subValue = subFrag.querySelector("[data-name=notificationSubtypeValue]");
+                                const subTextarea = subFrag.querySelector('[data-name="txtTemplate"]');
+
+                                subName.innerText = subtype;
+
+                                const subkey = key + subtype.replace(/\s/g, '');
+                                subValue.dataset.value = subkey;
+                                subTextarea.dataset.value = subkey;
+
+                                if (userConfig === null) {
+                                    subValue.checked = false;
+                                    subTextarea.value = this.defaultMessages[subkey];
+                                } else {
+                                    subValue.checked = userConfig[subkey] === true;
+                                    subTextarea.value = userConfig[subkey + 'StringMessage'];
+                                }
+
+                                children.appendChild(subFrag);
                             }
-                            container.appendChild(template);
                         }
                     }
+
+                    container.appendChild(fragment);
                 }
             },
 
@@ -123,7 +150,7 @@ export default function (view) {
             }
         },
 
-        user: {
+        users: {
             loadUsers: async function () {
                 const users = await window.ApiClient.getUsers();
                 const selectElement = document.getElementById("userToConfigure");
@@ -142,12 +169,12 @@ export default function (view) {
         },
 
         init: async function () {
-            // Load users and pick first one by default
-            await this.user.loadUsers();
-            const select = document.getElementById('userToConfigure');
-            if (select && select.options.length > 0 && !select.value) {
-                select.selectedIndex = 0;
-            }
+            await this.users.loadUsers();
+
+            //const select = document.getElementById('userToConfigure');
+            //if (select && select.options.length > 0 && !select.value) {
+            //    select.selectedIndex = 0;
+            //}
 
             this.notificationType.defaultMessages = await this.notificationType.loadDefaultMessages() ?? {};
 
@@ -156,16 +183,54 @@ export default function (view) {
             document.getElementById('userToConfigure').addEventListener('change', this.loadConfig);
             document.getElementById('testButton').addEventListener('click', this.testBotConfig);
             document.getElementById('saveButton').addEventListener('click', this.saveConfig);
+            document.getElementById('addChatButton').addEventListener('click', () => {
+                this.configuredChats.addRow({ ChatId: '', ThreadId: '' });
+            });
+
+            document.getElementById('ConfiguredChatsContainer').addEventListener('click', (event) => {
+                const removeBtn = event.target.closest('.remove-chat-button');
+                if (!removeBtn) return;
+                event.preventDefault();
+                const row = removeBtn.closest('.configured-chat-row');
+                if (row) row.remove();
+                TelefinConfig.configuredChats.updateRemoveButtons();
+            });
 
             // Single delegated handler for template edit/reset
             document.body.addEventListener('click', (event) => {
+                const toggleButton = event.target.closest('.toggle-subtypes-button');
                 const editButton = event.target.closest('.edit-template-button');
                 const resetButton = event.target.closest('.reset-template-button');
+
+                if (toggleButton) {
+                    event.preventDefault();
+
+                    const item = toggleButton.closest('.telefin-item');
+                    if (!item) return;
+
+                    const children = item.querySelector('.telefin-children');
+                    if (!children) return;
+
+                    const isHidden = children.style.display === 'none' || children.style.display === '';
+                    children.style.display = isHidden ? 'block' : 'none';
+
+                    const expandIcon = toggleButton.querySelector('.toggle-icon-expand');
+                    const collapseIcon = toggleButton.querySelector('.toggle-icon-collapse');
+
+                    if (expandIcon && collapseIcon) {
+                        expandIcon.style.display = isHidden ? 'none' : 'inline';
+                        collapseIcon.style.display = isHidden ? 'inline' : 'none';
+                    }
+
+                    const s = toggleButton.querySelector('.toogle-subtypes-button-text');
+                    if (s) s.textContent = isHidden ? 'Collapse' : 'Expand';
+                    return;
+                }
 
                 if (editButton) {
                     event.preventDefault();
 
-                    // New layout: buttons live inside .telefin-item, editor wrapper is .telefin-editor
+                    // Buttons live inside .telefin-item, editor wrapper is .telefin-editor
                     const item = editButton.closest('.telefin-item');
                     if (!item) return;
 
@@ -188,7 +253,6 @@ export default function (view) {
                 if (resetButton) {
                     event.preventDefault();
 
-                    // New layout: same idea, find the containing item
                     const item = resetButton.closest('.telefin-item');
                     if (!item) return;
 
@@ -199,7 +263,7 @@ export default function (view) {
                     const key = textarea.dataset.value;
                     textarea.value = TelefinConfig.notificationType.defaultMessages[key];
 
-                    // Optional: keep the editor open after reset, so user sees it changed
+                    // Keep the editor open after reset, so user sees it changed
                     textarea.style.display = 'block';
                     if (editor) editor.style.display = 'block';
                     resetButton.style.display = 'inline-block';
@@ -207,16 +271,65 @@ export default function (view) {
             });
         },
 
+        configuredChats: {
+            container: function () {
+                return document.getElementById('ConfiguredChatsContainer');
+            },
+            addRow: function (chat) {
+                const template = document.getElementById('template-configured-chat');
+                const fragment = template.cloneNode(true).content;
+                const row = fragment.querySelector('.configured-chat-row');
+
+                row.querySelector('[data-name="ChatId"]').value = chat?.ChatId ?? '';
+                row.querySelector('[data-name="ThreadId"]').value = chat?.ThreadId ?? '';
+
+                this.container().appendChild(fragment);
+                this.updateRemoveButtons();
+            },
+            setAll: function (chats) {
+                const c = this.container();
+                c.innerHTML = '';
+
+                const list = Array.isArray(chats) ? chats : [];
+                if (list.length === 0) {
+                    this.addRow({ ChatId: '', ThreadId: '' });
+                    return;
+                }
+
+                for (const chat of list) {
+                    this.addRow(chat);
+                }
+            },
+            getAll: function () {
+                const rows = Array.from(this.container().querySelectorAll('.configured-chat-row'));
+                const chats = rows.map(row => {
+                    const chatId = row.querySelector('[data-name="ChatId"]').value?.trim() ?? '';
+                    const threadId = row.querySelector('[data-name="ThreadId"]').value?.trim() ?? '';
+                    return { ChatId: chatId, ThreadId: threadId };
+                });
+
+                // Only persist rows with a ChatId
+                return chats.filter(x => x.ChatId.length > 0);
+            },
+            updateRemoveButtons: function () {
+                const rows = Array.from(this.container().querySelectorAll('.configured-chat-row'));
+                const showRemove = rows.length > 1;
+                for (const row of rows) {
+                    const btn = row.querySelector('.remove-chat-button');
+                    if (btn) btn.style.display = showRemove ? 'inline-flex' : 'none';
+                }
+            }
+        },
+
         loadConfig: function () {
             Dashboard.showLoadingMsg();
             ApiClient.getPluginConfiguration(TelefinConfig.pluginUniqueId).then(function (config) {
                 document.querySelector('#EnablePlugin').checked = config.EnablePlugin;
-                const userConfig = config.UserConfigurations.find(x => x.UserId === TelefinConfig.user.getSelectedUserId());
+                const userConfig = config.UserConfigurations.find(x => x.UserId === TelefinConfig.users.getSelectedUserId());
                 if (userConfig) {
                     document.querySelector('#ServerUrl').value = config.ServerUrl;
                     document.querySelector('#BotToken').value = userConfig.BotToken;
-                    document.querySelector('#ChatId').value = userConfig.ChatId;
-                    document.querySelector('#ThreadId').value = userConfig.ThreadId;
+                    TelefinConfig.configuredChats.setAll(userConfig.ConfiguredChats);
                     document.querySelector('#EnableUser').checked = userConfig.EnableUser;
                     document.querySelector('#SilentNotification').checked = userConfig.SilentNotification;
                     document.querySelector('#DoNotMentionOwnActivities').checked = userConfig.DoNotMentionOwnActivities;
@@ -224,8 +337,7 @@ export default function (view) {
                 } else {
                     document.querySelector('#ServerUrl').value = config.ServerUrl;
                     document.querySelector('#BotToken').value = '';
-                    document.querySelector('#ChatId').value = '';
-                    document.querySelector('#ThreadId').value = '';
+                    TelefinConfig.configuredChats.setAll([]);
                     document.querySelector('#EnableUser').checked = false;
                     document.querySelector('#SilentNotification').checked = false;
                     document.querySelector('#DoNotMentionOwnActivities').checked = false;
@@ -243,12 +355,11 @@ export default function (view) {
                 Dashboard.showLoadingMsg();
                 ApiClient.getPluginConfiguration(TelefinConfig.pluginUniqueId).then(function (config) {
                     config.EnablePlugin = document.querySelector('#EnablePlugin').checked;
-                    const userConfig = config.UserConfigurations.find(x => x.UserId === TelefinConfig.user.getSelectedUserId());
+                    const userConfig = config.UserConfigurations.find(x => x.UserId === TelefinConfig.users.getSelectedUserId());
                     if (userConfig) {
                         config.ServerUrl = document.querySelector('#ServerUrl').value;
                         userConfig.BotToken = document.querySelector('#BotToken').value;
-                        userConfig.ChatId = document.querySelector('#ChatId').value;
-                        userConfig.ThreadId = document.querySelector('#ThreadId').value;
+                        userConfig.ConfiguredChats = TelefinConfig.configuredChats.getAll();
                         userConfig.EnableUser = document.querySelector('#EnableUser').checked;
                         userConfig.SilentNotification = document.querySelector('#SilentNotification').checked;
                         userConfig.DoNotMentionOwnActivities = document.querySelector('#DoNotMentionOwnActivities').checked;
@@ -256,16 +367,15 @@ export default function (view) {
                     } else {
                         config.ServerUrl = document.querySelector('#ServerUrl').value;
                         config.UserConfigurations.push({
-                            UserId: TelefinConfig.user.getSelectedUserId(),
+                            UserId: TelefinConfig.users.getSelectedUserId(),
                             UserName: document.querySelector('#userToConfigure').selectedOptions[0].text,
                             BotToken: document.querySelector('#BotToken').value,
-                            ChatId: document.querySelector('#ChatId').value,
-                            ThreadId: document.querySelector('#ThreadId').value,
+                            ConfiguredChats: TelefinConfig.configuredChats.getAll(),
                             EnableUser: document.querySelector('#EnableUser').checked,
                             SilentNotification: document.querySelector('#SilentNotification').checked,
                             DoNotMentionOwnActivities: document.querySelector('#DoNotMentionOwnActivities').checked,
                         });
-                        TelefinConfig.notificationType.saveNotificationTypes(config.UserConfigurations.find(x => x.UserId === TelefinConfig.user.getSelectedUserId()));
+                        TelefinConfig.notificationType.saveNotificationTypes(config.UserConfigurations.find(x => x.UserId === TelefinConfig.users.getSelectedUserId()));
                     }
                     ApiClient.updatePluginConfiguration(TelefinConfig.pluginUniqueId, config).then(function (result) {
                         Dashboard.processPluginConfigurationUpdateResult(result);
@@ -283,19 +393,19 @@ export default function (view) {
                     return ApiClient.getPluginConfiguration(TelefinConfig.pluginUniqueId);
                 })
                 .then(function (config) {
-                    const userConfig = config.UserConfigurations.find(x => x.UserId === TelefinConfig.user.getSelectedUserId());
-                    var threadId = userConfig.ThreadId;
-                    if (threadId === '') {
-                        threadId = null;
-                    }
-                    const params = {
+                    const userConfig = config.UserConfigurations.find(x => x.UserId === TelefinConfig.users.getSelectedUserId());
+                    const payload = {
                         botToken: userConfig.BotToken,
-                        chatId: userConfig.ChatId,
-                        threadId: threadId,
+                        configuredChats: userConfig.ConfiguredChats ?? []
                     };
-                    const url = new URL('/TelefinApi/SmokeTest', window.location.origin);
-                    Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
-                    return fetch(url);
+                    return fetch('/TelefinApi/SmokeTest', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify(payload)
+                    });
                 })
                 .then(function (response) {
                     Dashboard.hideLoadingMsg();

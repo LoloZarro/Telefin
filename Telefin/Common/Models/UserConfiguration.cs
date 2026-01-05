@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using Telefin.Common.Models;
+
 namespace Telefin.Configuration;
 
 public class UserConfiguration
@@ -5,8 +8,8 @@ public class UserConfiguration
     public string UserId { get; set; } = string.Empty;
     public string UserName { get; set; } = string.Empty;
     public string BotToken { get; set; } = string.Empty;
-    public string ChatId { get; set; } = string.Empty;
-    public string ThreadId { get; set; } = string.Empty;
+
+    public List<ConfiguredChat> ConfiguredChats { get; set; } = new();
 
     public bool EnableUser { get; set; }
     public bool SilentNotification { get; set; }
