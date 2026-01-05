@@ -1,14 +1,13 @@
 ﻿using System.Collections.Generic;
-using Jellyfin.Data.Events;
-using MediaBrowser.Controller.Session;
+using MediaBrowser.Controller.Events.Authentication;
 
 namespace Telefin.NotificationContext
 {
     internal class AuthenticationRequestContext : NotificationContextBase
     {
-        private readonly GenericEventArgs<AuthenticationRequest> _eventArgs;
+        private readonly AuthenticationRequestEventArgs _eventArgs;
 
-        public AuthenticationRequestContext(GenericEventArgs<AuthenticationRequest> eventArgs)
+        public AuthenticationRequestContext(AuthenticationRequestEventArgs eventArgs)
         {
             _eventArgs = eventArgs;
         }
@@ -17,8 +16,8 @@ namespace Telefin.NotificationContext
         {
             var data = new Dictionary<string, string?>();
 
-            data["{deviceName}"] = _eventArgs.Argument?.DeviceName;
-            data["{username}"] = _eventArgs.Argument?.Username;
+            data["{deviceName}"] = _eventArgs.DeviceName;
+            data["{username}"] = _eventArgs.Username;
 
             return data;
         }

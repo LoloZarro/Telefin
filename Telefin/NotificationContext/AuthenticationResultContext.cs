@@ -1,15 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
-using Jellyfin.Data.Events;
-using MediaBrowser.Controller.Authentication;
+using MediaBrowser.Controller.Events.Authentication;
 
 namespace Telefin.NotificationContext
 {
     internal class AuthenticationResultContext : NotificationContextBase
     {
-        private readonly GenericEventArgs<AuthenticationResult> _eventArgs;
+        private readonly AuthenticationResultEventArgs _eventArgs;
 
-        public AuthenticationResultContext(GenericEventArgs<AuthenticationResult> eventArgs)
+        public AuthenticationResultContext(AuthenticationResultEventArgs eventArgs)
         {
             _eventArgs = eventArgs;
         }
@@ -18,10 +17,10 @@ namespace Telefin.NotificationContext
         {
             var data = new Dictionary<string, string?>();
 
-            data["{deviceName}"] = _eventArgs.Argument?.SessionInfo?.DeviceName;
-            data["{username}"] = _eventArgs.Argument?.SessionInfo?.UserName;
-            data["{serverName}"] = _eventArgs.Argument?.User?.ServerName;
-            data["{lastActivity}"] = _eventArgs.Argument?.User?.LastActivityDate?.ToString("dd.MM.yyyy HH:mm", CultureInfo.InvariantCulture);
+            data["{deviceName}"] = _eventArgs.SessionInfo?.DeviceName;
+            data["{username}"] = _eventArgs.User?.Name;
+            data["{serverName}"] = _eventArgs.User?.ServerName;
+            data["{lastActivity}"] = _eventArgs.User?.LastActivityDate?.ToString("dd.MM.yyyy HH:mm", CultureInfo.InvariantCulture);
 
             return data;
         }

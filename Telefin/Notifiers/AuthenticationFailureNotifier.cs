@@ -1,14 +1,13 @@
 using System;
 using System.Threading.Tasks;
-using Jellyfin.Data.Events;
 using MediaBrowser.Controller.Events;
-using MediaBrowser.Controller.Session;
+using MediaBrowser.Controller.Events.Authentication;
 using Telefin.Common.Enums;
 using Telefin.Helper;
 
 namespace Telefin.Notifiers;
 
-public class AuthenticationFailureNotifier : IEventConsumer<GenericEventArgs<AuthenticationRequest>>
+public class AuthenticationFailureNotifier : IEventConsumer<AuthenticationRequestEventArgs>
 {
     private readonly NotificationDispatcher _notificationDispatcher;
 
@@ -17,7 +16,7 @@ public class AuthenticationFailureNotifier : IEventConsumer<GenericEventArgs<Aut
         _notificationDispatcher = notificationFilter;
     }
 
-    public async Task OnEvent(GenericEventArgs<AuthenticationRequest> eventArgs)
+    public async Task OnEvent(AuthenticationRequestEventArgs eventArgs)
     {
         if (eventArgs == null)
         {
