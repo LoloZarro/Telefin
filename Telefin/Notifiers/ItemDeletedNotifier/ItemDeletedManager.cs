@@ -49,7 +49,7 @@ public class ItemDeletedManager : IItemDeletedManager
 
         var validatedQueue = PrepareQueueItemsForNotification(queueSnapshot);
 
-        _logger.LogInformation("{PluginName} - {ClassName}: {Amount} notifications are ready to be sent out.", Plugin.PluginName, nameof(ItemAddedManager), validatedQueue.Length);
+        _logger.LogInformation("{PluginName} - {ClassName}: {Amount} notification(s) ready to be sent out.", Plugin.PluginName, nameof(ItemAddedManager), validatedQueue.Length);
 
         var scope = _applicationHost.ServiceProvider!.CreateAsyncScope();
         var notificationDispatcher = scope.ServiceProvider.GetRequiredService<NotificationDispatcher>();
