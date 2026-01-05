@@ -17,7 +17,7 @@ namespace Telefin.Helper
             foreach (var kv in data)
             {
                 var key = kv.Key;
-                var value = string.IsNullOrEmpty(kv.Value) ? "..." : kv.Value;
+                var value = string.IsNullOrEmpty(kv.Value) ? "N/A" : kv.Value;
 
                 if (message.Contains(key, StringComparison.OrdinalIgnoreCase))
                 {

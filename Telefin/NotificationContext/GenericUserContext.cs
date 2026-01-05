@@ -67,9 +67,6 @@ namespace Telefin.NotificationContext
             data["{maxActiveSessions}"] = _user?.MaxActiveSessions.ToString(CultureInfo.InvariantCulture);
             data["{syncPlayAccess}"] = _user?.SyncPlayAccess.ToString();
 
-            // Misc
-            data["{rowVersion}"] = _user?.RowVersion.ToString(CultureInfo.InvariantCulture);
-
             return data;
         }
 
