@@ -42,11 +42,10 @@ public class ItemAddedNotifierEntryPoint : IHostedService
         var subType = TypeOfNotification.ToNotificationSubType(item);
         if (subType == null)
         {
-            _logger.LogDebug("{PluginName}: Notification for media type '{MediaType}' is not supported", typeof(Plugin).Name, item.GetType().ToString());
+            _logger.LogDebug("{PluginName}: Notification for media type '{MediaType}' is not supported", Plugin.PluginName, item.GetType().ToString());
             return;
         }
 
-        // Never notify on virtual items.
         if (!item.IsVirtualItem && item is Movie or Series or Season or Episode or MusicAlbum or Audio or Book) // Audio covers AudioBook
         {
             _itemAddedManager.AddItem(item);

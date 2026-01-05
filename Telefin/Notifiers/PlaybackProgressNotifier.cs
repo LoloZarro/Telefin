@@ -32,7 +32,7 @@ public class PlaybackProgressNotifier : IEventConsumer<PlaybackProgressEventArgs
         var subType = TypeOfNotification.ToNotificationSubType(eventArgs.Item);
         if (subType == null)
         {
-            _logger.LogDebug("{PluginName}: Notification for media type '{MediaType}' is not supported", typeof(Plugin).Name, eventArgs.Item.GetType().ToString());
+            _logger.LogDebug("{PluginName}: Notification for media type '{MediaType}' is not supported", Plugin.PluginName, eventArgs.Item.GetType().ToString());
             return;
         }
 

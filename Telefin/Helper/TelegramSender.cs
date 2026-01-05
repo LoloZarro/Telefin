@@ -51,7 +51,7 @@ namespace Telefin.Helper
             }
             catch (ArgumentException ex)
             {
-                _logger.LogError(ex, "{PluginName}({NotificationType}): Invalid bot token provided.", typeof(Plugin).Name, notificationType);
+                _logger.LogError(ex, "{PluginName}({NotificationType}): Invalid bot token provided.", Plugin.PluginName, notificationType);
                 return false;
             }
         }
@@ -82,14 +82,14 @@ namespace Telefin.Helper
                 // Fetch image
                 try
                 {
-                    _logger.LogInformation("{PluginName}({NotificationType}): Fetching image: {Url}", typeof(Plugin).Name, notificationType, imageUrl);
+                    _logger.LogDebug("{PluginName}({NotificationType}): Fetching image: {Url}", Plugin.PluginName, notificationType, imageUrl);
 
                     using var imageResponse = await _httpClient.GetAsync(imageUrl).ConfigureAwait(false);
                     var imageBytes = await imageResponse.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
 
                     if (!imageResponse.IsSuccessStatusCode || imageBytes.Length == 0)
                     {
-                        _logger.LogError("{PluginName}({NotificationType}): Failed to fetch image. HTTP {StatusCode}", typeof(Plugin).Name, notificationType, (int)imageResponse.StatusCode);
+                        _logger.LogError("{PluginName}({NotificationType}): Failed to fetch image. HTTP {StatusCode}", Plugin.PluginName, notificationType, (int)imageResponse.StatusCode);
                         return false;
                     }
 
@@ -99,7 +99,7 @@ namespace Telefin.Helper
                 }
                 catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
                 {
-                    _logger.LogWarning(ex, "{PluginName}({NotificationType}): Error fetching image: {Url}. Falling back to regular message.", typeof(Plugin).Name, notificationType, imageUrl);
+                    _logger.LogWarning(ex, "{PluginName}({NotificationType}): Error fetching image: {Url}. Falling back to regular message.", Plugin.PluginName, notificationType, imageUrl);
                     return await SendMessageAsync(notificationType, caption ?? string.Empty, botToken, chatId, isSilentNotification, threadId).ConfigureAwait(false);
                 }
 
@@ -107,7 +107,7 @@ namespace Telefin.Helper
             }
             catch (ArgumentException ex)
             {
-                _logger.LogError(ex, "{PluginName}({NotificationType}): Invalid bot token provided.", typeof(Plugin).Name, notificationType);
+                _logger.LogError(ex, "{PluginName}({NotificationType}): Invalid bot token provided.", Plugin.PluginName, notificationType);
                 return false;
             }
         }
@@ -122,7 +122,7 @@ namespace Telefin.Helper
             }
             catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
             {
-                _logger.LogError(ex, "{PluginName}({NotificationType}): Request failed. Please check configuration and connectivity.", typeof(Plugin).Name, notificationType);
+                _logger.LogError(ex, "{PluginName}({NotificationType}): Request failed. Please check configuration and connectivity.", Plugin.PluginName, notificationType);
                 return false;
             }
         }
@@ -136,7 +136,7 @@ namespace Telefin.Helper
             }
             catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
             {
-                _logger.LogError(ex, "{PluginName}({NotificationType}): Request failed. Please check configuration and connectivity.", typeof(Plugin).Name, notificationType);
+                _logger.LogError(ex, "{PluginName}({NotificationType}): Request failed. Please check configuration and connectivity.", Plugin.PluginName, notificationType);
                 return false;
             }
         }
@@ -160,7 +160,7 @@ namespace Telefin.Helper
                 {
                     _logger.LogError(
                         "{PluginName}({NotificationType}): Telegram HTTP error {StatusCode}. Body: {Body}",
-                        typeof(Plugin).Name,
+                        Plugin.PluginName,
                         notificationType,
                         (int)response.StatusCode,
                         body);
@@ -171,7 +171,7 @@ namespace Telefin.Helper
                 {
                     _logger.LogError(
                         "{PluginName}({NotificationType}): Telegram API error {ErrorCode}: {Description}. Body: {Body}",
-                        typeof(Plugin).Name,
+                        Plugin.PluginName,
                         notificationType,
                         parsed.ErrorCode,
                         parsed.Description,
@@ -180,12 +180,12 @@ namespace Telefin.Helper
                     return false;
                 }
 
-                _logger.LogInformation("{PluginName}({NotificationType}): Message sent successfully.", typeof(Plugin).Name, notificationType);
+                _logger.LogDebug("{PluginName}({NotificationType}): Message sent successfully.", Plugin.PluginName, notificationType);
                 return true;
             }
             catch (JsonException ex)
             {
-                _logger.LogError(ex, "{PluginName}({NotificationType}): Could not parse Telegram response. HTTP {StatusCode}. Body: {Body}", typeof(Plugin).Name, notificationType, (int)response.StatusCode, body);
+                _logger.LogError(ex, "{PluginName}({NotificationType}): Could not parse Telegram response. HTTP {StatusCode}. Body: {Body}", Plugin.PluginName, notificationType, (int)response.StatusCode, body);
                 return false;
             }
         }

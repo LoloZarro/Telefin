@@ -75,7 +75,7 @@ namespace Telefin.Helper
                 INotificationContext? context = CreateNotificationTypeContext(notificationType, subtype, item);
                 //if (context == null)
                 //{
-                //    _logger.LogError("{PluginName}: Unable to dispatch notification for {ItemName} there is no corresponding NotificationTypeContext.", typeof(Plugin).Name, (string)itemType);
+                //    _logger.LogWarning("{PluginName}: Unable to dispatch notification for {ItemName} there is no corresponding NotificationTypeContext.", Plugin.PluginName, (string)itemType);
                 //    return;
                 //}
 
@@ -84,7 +84,7 @@ namespace Telefin.Helper
 
                 if (string.IsNullOrEmpty(message))
                 {
-                    _logger.LogError("{PluginName}: Unable to dispatch notification for {ItemName} as the message is empty.", typeof(Plugin).Name, (string)itemType);
+                    _logger.LogWarning("{PluginName}: Unable to dispatch notification for {ItemName} as the message is empty.", Plugin.PluginName, (string)itemType);
                     return;
                 }
 

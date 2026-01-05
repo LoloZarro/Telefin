@@ -32,11 +32,6 @@ public class ItemDeletedNotifierEntryPoint : IHostedService
 
     private void ItemDeletedHandler(object? sender, ItemChangeEventArgs itemChangeEventArgs)
     {
-        if (itemChangeEventArgs.UpdateReason != 0) // Do not renotify after initial adding
-        {
-            return;
-        }
-
         var item = itemChangeEventArgs.Item;
 
         if (AddItemToQueue(item))
@@ -68,7 +63,6 @@ public class ItemDeletedNotifierEntryPoint : IHostedService
 
     private bool AddItemToQueue(BaseItem item)
     {
-        // Never notify on virtual items.
         if (!IsSubTypeSupported(item) && !item.IsVirtualItem)
         {
             return false;
@@ -88,7 +82,7 @@ public class ItemDeletedNotifierEntryPoint : IHostedService
         var subType = TypeOfNotification.ToNotificationSubType(item);
         if (subType == null)
         {
-            _logger.LogWarning("{PluginName}: Notification for media type '{MediaType}' is not supported", typeof(Plugin).Name, item.GetType().ToString());
+            _logger.LogDebug("{PluginName}: Notification for media type '{MediaType}' is not supported", Plugin.PluginName, item.GetType().ToString());
             return false;
         }
 
