@@ -42,4 +42,13 @@ public sealed class QueuedItemContainer
             ChildItemIds.Add(id);
         }
     }
+
+    public void RemoveAllChildren()
+    {
+        foreach (var child in ChildItemIds)
+        {
+            ChildItemIds.Remove(child);
+        }
+
+    }
 }
