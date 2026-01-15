@@ -44,11 +44,17 @@ public class ItemAddedManager : IItemAddedManager
         var queueSnapshot = _itemProcessQueue.ToArray();
         if (queueSnapshot.Length == 0)
         {
-            _logger.LogInformation("{PluginName} - {ClassName}: No recently added items to process in the queue", Plugin.PluginName, nameof(ItemAddedManager));
+            _logger.LogInformation("{PluginName} - {ClassName}: No items to process", Plugin.PluginName, nameof(ItemAddedManager));
             return;
         }
 
         var validatedQueue = PrepareQueueItemsForNotification(queueSnapshot);
+        if (validatedQueue is null)
+        {
+            _logger.LogWarning("{PluginName} - {ClassName}: Not all items in the queue are ready to be processed, retrying next run.", Plugin.PluginName, nameof(ItemAddedManager));
+            return;
+        }
+
         var notificationCandidates = NotificationQueueHelper.EvaluateNotificationCandidates(validatedQueue);
 
         _logger.LogInformation("{PluginName} - {ClassName}: {Amount} notification(s) ready to be sent out.", Plugin.PluginName, nameof(ItemAddedManager), notificationCandidates.Count);
@@ -60,31 +66,32 @@ public class ItemAddedManager : IItemAddedManager
         {
             foreach (var candidate in notificationCandidates)
             {
-                var itemIdToNotifyOn = candidate.ItemId;
-                var sourceIds = candidate.ChildItemIds.Append(itemIdToNotifyOn).ToHashSet(); // all queue items this notification consumes
+                var currentCandidateId = candidate.ItemId;
+                var itemIdsFromQeueBeingProcessed = candidate.ChildItemIds.Append(currentCandidateId).ToHashSet();
 
-                // Item from the library will be present unless the container was created during evaluation of notification candidates (grouping)
-                var item = candidate.BaseItem ?? _libraryManager.GetItemById(itemIdToNotifyOn);
-                if (item is null) // Should technically not be possible anymore
+                // BaseItem from the library will be present unless the container was created during evaluation of notification candidates (grouping)
+                var item = candidate.BaseItem ?? _libraryManager.GetItemById(currentCandidateId);
+
+                if (item is null)
                 {
-                    _logger.LogDebug("{PluginName} - {ClassName}: Item {ItemId} not found, removing from queue", Plugin.PluginName, nameof(ItemAddedManager), itemIdToNotifyOn);
-                    MarkProcessed(sourceIds); // Drop all items related to this candidate
+                    _logger.LogDebug("{PluginName} - {ClassName}: Item {ItemId} not found, removing from queue", Plugin.PluginName, nameof(ItemAddedManager), currentCandidateId);
+                    MarkProcessed(itemIdsFromQeueBeingProcessed);
                     continue;
                 }
 
-                _logger.LogDebug("{PluginName} - {ClassName}: Processing notification for {ItemName} (consuming {Count} queued items)", Plugin.PluginName, nameof(ItemAddedManager), item.Name, sourceIds.Count);
+                _logger.LogDebug("{PluginName} - {ClassName}: Processing notification for {ItemName} (consuming {Count} queued items)", Plugin.PluginName, nameof(ItemAddedManager), item.Name, itemIdsFromQeueBeingProcessed.Count);
 
-                if (item.ProviderIds.Keys.Count == 0) // Should technically not be possible anymore
+                if (item.ProviderIds.Count <= 0)
                 {
-                    if (ShouldRetry(sourceIds))
+                    if (ShouldRetry([item.Id]))
                     {
-                        _logger.LogDebug("{PluginName} - {ClassName}: Requeue {ItemName}, no metadata yet (retry attempt for one of {Count} items)", Plugin.PluginName, nameof(ItemAddedManager), item.Name, sourceIds.Count);
-                        IncrementRetry(sourceIds);
+                        _logger.LogDebug("{PluginName} - {ClassName}: Requeue {ItemName}, no metadata yet (retry attempt for one of {Count} items)", Plugin.PluginName, nameof(ItemAddedManager), item.Name, itemIdsFromQeueBeingProcessed.Count);
+                        IncrementRetry(itemIdsFromQeueBeingProcessed);
                         continue;
                     }
 
                     _logger.LogWarning("{PluginName} - {ClassName}: Item {ItemName} has no metadata after {MaxRetries} retries; skipping notification", Plugin.PluginName, nameof(ItemAddedManager), item.Name, MaxRetries);
-                    MarkProcessed(sourceIds); // Drop all items related to this candidate
+                    MarkProcessed(itemIdsFromQeueBeingProcessed);
                     continue;
                 }
 
@@ -95,14 +102,15 @@ public class ItemAddedManager : IItemAddedManager
                     subtype: TypeOfNotification.ToNotificationSubType(item)!) // Entry point already checks for null
                     .ConfigureAwait(false);
 
-                MarkProcessed(sourceIds);
+                MarkProcessed(itemIdsFromQeueBeingProcessed);
             }
         }
     }
 
-    private KeyValuePair<Guid, QueuedItemContainer>[] PrepareQueueItemsForNotification(KeyValuePair<Guid, QueuedItemContainer>[] queue)
+    private KeyValuePair<Guid, QueuedItemContainer>[]? PrepareQueueItemsForNotification(KeyValuePair<Guid, QueuedItemContainer>[] queue)
     {
         var filteredQueue = new List<KeyValuePair<Guid, QueuedItemContainer>>();
+        var queueReady = true;
 
         foreach (var item in queue)
         {
@@ -118,13 +126,21 @@ public class ItemAddedManager : IItemAddedManager
                 continue;
             }
 
-            // Check if item metadata is present yet. We need it in order to group the items correctly later.
-            if (baseItem.ProviderIds.Count == 0)
+            // Check if item metadata is present, we need it in order to group the items correctly later.
+            if (baseItem.ProviderIds.Count <= 0)
             {
                 if (ShouldRetry([itemId]))
                 {
-                    _logger.LogDebug("{PluginName} - {ClassName}: Requeue {ItemName}, no metadata yet retry next run", Plugin.PluginName, nameof(ItemAddedManager), baseItem.Name);
+                    _logger.LogDebug("{PluginName} - {ClassName}: Requeue {ItemName}, no metadata yet. Retry next run!", Plugin.PluginName, nameof(ItemAddedManager), baseItem.Name);
                     IncrementRetry([itemId]);
+
+                    // All items need to have valid metadata before processing the queue as a whole.
+                    // This is neccessary to prevent duplicate notification for the same item.
+                    //
+                    // Example:
+                    // A series was uploaded but one of the seasons didn't have providers yet, so it will be skipped.
+                    // The next run it will produce a notification for the season that didn't have metadata previously.
+                    queueReady = false;
                     continue;
                 }
 
@@ -133,11 +149,11 @@ public class ItemAddedManager : IItemAddedManager
                 continue;
             }
 
-            container.BaseItem = baseItem; // Attach the fully featured item from the library
+            container.BaseItem = baseItem;
             filteredQueue.Add(item);
         }
 
-        return filteredQueue.ToArray();
+        return queueReady ? filteredQueue.ToArray() : null;
     }
 
     public void AddItem(BaseItem item)
@@ -158,7 +174,7 @@ public class ItemAddedManager : IItemAddedManager
         }
         else
         {
-            // Expect duplicate events for same item.
+            // Expect duplicate events for the same item.
             _logger.LogDebug("{PluginName}: Already queued {ItemName} ({Kind}), skipping duplicate", Plugin.PluginName, item.Name, container.MediaType);
         }
     }
