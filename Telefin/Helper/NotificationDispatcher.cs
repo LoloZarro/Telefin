@@ -40,7 +40,8 @@ namespace Telefin.Helper
                 }
 
                 var isNotificationTypeEnabled = userConfiguration.GetPropertySafely<bool?>(notificationType.ToString());
-                if (isNotificationTypeEnabled != true)
+                var isNotificationSubTypeEnabled = userConfiguration.GetPropertySafely<bool?>(subtype);
+                if (isNotificationTypeEnabled != true || isNotificationSubTypeEnabled != true)
                 {
                     continue;
                 }
