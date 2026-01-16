@@ -43,7 +43,7 @@ public class ItemDeletedManager : IItemDeletedManager
         var queueSnapshot = _itemProcessQueue.ToArray();
         if (queueSnapshot.Length == 0)
         {
-            _logger.LogInformation("{PluginName} - {ClassName}: No recently deleted items to process in the queue", Plugin.PluginName, nameof(ItemDeletedManager));
+            _logger.LogInformation("{PluginName} - {ClassName}: No items to process", Plugin.PluginName, nameof(ItemDeletedManager));
             return;
         }
 
@@ -59,14 +59,8 @@ public class ItemDeletedManager : IItemDeletedManager
             foreach (var queueItem in validatedQueue)
             {
                 var item = queueItem.BaseItem;
-                if (item is null)
-                {
-                    _logger.LogDebug("{PluginName} - {ClassName}: Item {ItemId} not found, removing from queue", Plugin.PluginName, nameof(ItemAddedManager), queueItem.ItemId);
-                    MarkProcessed(queueItem.ItemId);
-                    continue;
-                }
 
-                _logger.LogDebug("{PluginName} - {ClassName}: Processing notification for {ItemName}", Plugin.PluginName, nameof(ItemDeletedManager), item.Name);
+                _logger.LogDebug("{PluginName} - {ClassName}: Processing notification for {ItemName}", Plugin.PluginName, nameof(ItemDeletedManager), item!.Name);
 
                 await notificationDispatcher.DispatchNotificationsAsync(
                     TypeOfNotification,
@@ -89,13 +83,15 @@ public class ItemDeletedManager : IItemDeletedManager
             var itemId = item.Key;
             var container = item.Value;
 
-            if (container is null)
+            if (container is null || container.BaseItem is null)
             {
+                _logger.LogWarning("{PluginName} - {ClassName}: Item {ItemName} cannot be processed. Notification will be skipped for this item.", Plugin.PluginName, nameof(ItemDeletedManager), itemId);
+                MarkProcessed(itemId);
                 continue;
             }
 
-            // Check if item metadata is present yet. We need them to resolve placeholders.
-            if (container.BaseItem?.ProviderIds?.Count == 0)
+            // Check if item metadata is present, we need it to resolve placeholders.
+            if (container.BaseItem?.ProviderIds?.Count <= 0)
             {
                 _logger.LogWarning("{PluginName} - {ClassName}: Item {ItemName} has no metadata. Notification will be skipped for this item.", Plugin.PluginName, nameof(ItemDeletedManager), container.BaseItem.Name);
                 MarkProcessed(itemId);
@@ -126,7 +122,7 @@ public class ItemDeletedManager : IItemDeletedManager
         }
         else
         {
-            // Expect duplicate events for same item.
+            // Expect duplicate events for the same item.
             _logger.LogDebug("Already queued {ItemName} ({Kind}) - skipping duplicate", item.Name, container.MediaType);
         }
     }
