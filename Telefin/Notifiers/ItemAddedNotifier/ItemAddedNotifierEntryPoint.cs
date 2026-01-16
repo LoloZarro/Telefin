@@ -39,14 +39,12 @@ public class ItemAddedNotifierEntryPoint : IHostedService
 
         var item = itemChangeEventArgs.Item;
 
-        var subType = TypeOfNotification.ToNotificationSubType(item);
-        if (subType == null)
+        if (!IsSubTypeSupported(item) || item.IsVirtualItem)
         {
-            _logger.LogDebug("{PluginName}: Notification for media type '{MediaType}' is not supported", Plugin.PluginName, item.GetType().ToString());
             return;
         }
 
-        if (!item.IsVirtualItem && item is Movie or Series or Season or Episode or MusicAlbum or Audio or Book) // Audio covers AudioBook
+        if (item is Movie or Series or Season or Episode or MusicAlbum or Audio or Book) // Audio covers AudioBook
         {
             _itemAddedManager.AddItem(item);
         }
@@ -62,5 +60,17 @@ public class ItemAddedNotifierEntryPoint : IHostedService
     {
         _libraryManager.ItemAdded -= ItemAddedHandler;
         return Task.CompletedTask;
+    }
+
+    private bool IsSubTypeSupported(BaseItem item)
+    {
+        var subType = TypeOfNotification.ToNotificationSubType(item);
+        if (subType == null)
+        {
+            _logger.LogDebug("{PluginName}: Notification for media type '{MediaType}' is not supported", Plugin.PluginName, item.GetType().ToString());
+            return false;
+        }
+
+        return true;
     }
 }

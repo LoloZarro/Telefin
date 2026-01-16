@@ -73,36 +73,41 @@ namespace Telefin.Helper
                     x.MediaType != MediaType.Episode)
                 .ToArray();
 
-            // Fast lookup, avoid constant iteration later on
+            // Fast lookups
             var seriesById = series.ToDictionary(x => x.ItemId);
             var seasonById = seasons.ToDictionary(x => x.ItemId);
 
 
-            // --- Group episodes by season ---
+            // Seasons
+
             var episodesBySeasonId = episodes
                 .Select(e => new { Container = e, (e.BaseItem as Episode)?.SeasonId }) // Requires Episode.BaseItem to be loaded from library
                 .Where(x => x.SeasonId.HasValue)
                 .GroupBy(x => x.SeasonId!.Value)
                 .ToDictionary(g => g.Key, g => g.Select(x => x.Container).ToArray());
 
-            // --- Ensure season containers ---
             var createdSeasonCandidates = new List<QueuedItemContainer>();
             foreach (var (seasonId, eps) in episodesBySeasonId)
             {
                 // Only create if multiple episodes present and no season container exists yet
                 if (!seasonById.TryGetValue(seasonId, out var seasonContainer))
                 {
-                    if (eps.Length <= 1) { continue; } // Single episode, don't bundle
+                    if (eps.Length <= 1)
+                    {
+                        continue;
+                    }
 
                     seasonContainer = new QueuedItemContainer(seasonId, MediaType.Season);
-                    seasonById[seasonId] = seasonContainer; // add to fast lookup
+                    seasonById[seasonId] = seasonContainer;
                     createdSeasonCandidates.Add(seasonContainer);
                 }
 
+                seasonContainer.RemoveAllChildren(); // Remove existing children just to be save (seasons will often already contain episodes that belong to it)
                 seasonContainer.AddChildren(eps.Select(e => e.ItemId));
             }
 
-            // --- Group seasons by series ---
+            // Series
+
             var allSeasons = seasonById.Values.ToArray();
 
             var seasonsBySeriesId = allSeasons
@@ -111,7 +116,6 @@ namespace Telefin.Helper
                 .GroupBy(x => x.SeriesId!.Value)
                 .ToDictionary(g => g.Key, g => g.Select(x => x.Container).ToArray());
 
-            // ---- Ensure series containers exist ---
             var createdSeriesCandidates = new List<QueuedItemContainer>();
 
             foreach (var (seriesId, seas) in seasonsBySeriesId)
@@ -119,36 +123,22 @@ namespace Telefin.Helper
                 // Only create if multiple seasons present and no series container exists yet
                 if (!seriesById.TryGetValue(seriesId, out var seriesContainer))
                 {
-                    if (seas.Length <= 1) { continue; }
+                    if (seas.Length <= 1)
+                    {
+                        continue;
+                    }
 
                     seriesContainer = new QueuedItemContainer(seriesId, MediaType.Series);
                     seriesById[seriesId] = seriesContainer;
                     createdSeriesCandidates.Add(seriesContainer);
                 }
 
+                seriesContainer.RemoveAllChildren(); // Remove existing children just to be save (series will often already contain seasons that belong to it)
                 seriesContainer.AddChildren(seas.Select(s => s.ItemId));
-
-                // We also have to attach episodes (from each season's child list if present, else from grouping)
-                foreach (var seasonContainer in seas)
-                {
-                    // Prefer already-attached season children (covers existing seasons too)
-                    if (seasonContainer.ChildItemIds.Count > 0)
-                    {
-                        seriesContainer.AddChildren(seasonContainer.ChildItemIds);
-                        continue;
-                    }
-
-                    // Fallback: attach from episode grouping if season didn't have children yet
-                    if (episodesBySeasonId.TryGetValue(seasonContainer.ItemId, out var epsForSeason))
-                    {
-                        seriesContainer.AddChildren(epsForSeason.Select(e => e.ItemId));
-                    }
-                }
+                seriesContainer.AddChildren(seas.SelectMany(s => s.ChildItemIds));
             }
 
-            // ---------------------------
-            // Notification selection logic
-            // ---------------------------
+            // Evaluation of candidates
 
             var seasonIdsCoveredByAnySeries = series
                 .SelectMany(s => s.ChildItemIds)
@@ -174,12 +164,12 @@ namespace Telefin.Helper
                     !episodeIdsCoveredByAnySeason.Contains(episode.ItemId));
 
             var candidates = movies
-                .Concat(createdSeasonCandidates)
+                .Concat(series)
                 .Concat(createdSeriesCandidates)
-                .Concat(series)                 // notify existing series containers too
-                .Concat(seasonCandidates)       // notify seasons not covered by any series candidate
-                .Concat(episodeCandidates)      // notify episodes not covered by any season candidate
-                .Concat(otherMediaItems)        // always notify for other media types (Audio, Book, etc.)
+                .Concat(seasonCandidates)
+                .Concat(createdSeasonCandidates)
+                .Concat(episodeCandidates)
+                .Concat(otherMediaItems)
                 .ToList();
 
             return candidates;

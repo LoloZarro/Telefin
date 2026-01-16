@@ -105,7 +105,7 @@ namespace Telefin.Common.Extensions
                 episodes = item.GetPropertySafely<BaseItem[]?>("Children");
             }
 
-            return episodes?.Length.ToString(CultureInfo.InvariantCulture);
+            return episodes?.Where(s => !s.IsVirtualItem)?.Count().ToString(CultureInfo.InvariantCulture);
         }
 
         public static string? GetSeasonAmount(this BaseItem? item)
@@ -117,7 +117,7 @@ namespace Telefin.Common.Extensions
 
             if (item is Series series)
             {
-                return series.GetPropertySafely<BaseItem[]?>("Children")?.Length.ToString(CultureInfo.InvariantCulture);
+                return series.GetPropertySafely<BaseItem[]?>("Children")?.Where(s => !s.IsVirtualItem)?.Count().ToString(CultureInfo.InvariantCulture);
             }
 
             return null;
