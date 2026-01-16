@@ -63,7 +63,7 @@ public class ItemDeletedNotifierEntryPoint : IHostedService
 
     private bool AddItemToQueue(BaseItem item)
     {
-        if (!IsSubTypeSupported(item) && !item.IsVirtualItem)
+        if (!IsSubTypeSupported(item) || item.IsVirtualItem)
         {
             return false;
         }
