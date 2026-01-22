@@ -19,7 +19,7 @@
       {
         "checksum": "5ff4770ddde260efc5fffb6ff9b13250",
         "version": "1.1.1.0",
-        "targetAbi": "10.11.0.0",
+        "targetAbi": "10.11.5.0",
         "sourceUrl": "https://github.com/LoloZarro/Telefin/releases/download/1.1.1.0/Telefin.zip",
         "timestamp": "2026-01-05T19:27:23Z",
         "changelog": "Automated release 1.1.1.0"
@@ -27,7 +27,7 @@
       {
         "checksum": "500e081e647df96fb8e66ce0df6bf48c",
         "version": "1.1.0.2",
-        "targetAbi": "10.11.0.0",
+        "targetAbi": "10.11.5.0",
         "sourceUrl": "https://github.com/LoloZarro/Telefin/releases/download/1.1.0.2/Telefin.zip",
         "timestamp": "2026-01-05T17:28:43Z",
         "changelog": "Automated release 1.1.0.2"
@@ -35,7 +35,7 @@
       {
         "checksum": "c6c88e25ff78c51c80e8cfbc320f688a",
         "version": "1.1.0.1",
-        "targetAbi": "10.11.0.0",
+        "targetAbi": "10.11.5.0",
         "sourceUrl": "https://github.com/LoloZarro/Telefin/releases/download/1.1.0.1/Telefin.zip",
         "timestamp": "2026-01-05T17:12:39Z",
         "changelog": "Automated release 1.1.0.1"
@@ -43,7 +43,7 @@
       {
         "checksum": "32212033f94b50cf6faa5056b2aee4e2",
         "version": "1.1.0.0",
-        "targetAbi": "10.11.0.0",
+        "targetAbi": "10.11.5.0",
         "sourceUrl": "https://github.com/LoloZarro/Telefin/releases/download/1.1.0.0/Telefin.zip",
         "timestamp": "2026-01-05T16:30:27Z",
         "changelog": "Automated release 1.1.0.0"
@@ -51,7 +51,7 @@
       {
         "checksum": "1ba23bfa4be22cfb884a974587d83ed7",
         "version": "1.0.2.0",
-        "targetAbi": "10.11.0.0",
+        "targetAbi": "10.11.5.0",
         "sourceUrl": "https://github.com/LoloZarro/Telefin/releases/download/1.0.2.0/Telefin.zip",
         "timestamp": "2026-01-05T15:44:49Z",
         "changelog": "Automated release 1.0.2.0"
@@ -59,7 +59,7 @@
       {
         "checksum": "d5fe080149e319c99074d2ee62300b86",
         "version": "1.0.1.0",
-        "targetAbi": "10.11.0.0",
+        "targetAbi": "10.11.5.0",
         "sourceUrl": "https://github.com/LoloZarro/Telefin/releases/download/1.0.1.0/Telefin.zip",
         "timestamp": "2025-12-21T16:46:48Z",
         "changelog": "Automated release 1.0.1.0"
@@ -67,7 +67,7 @@
       {
         "checksum": "39f366a30568aaeb742b0e4d88c9c02a",
         "version": "1.0.0.10",
-        "targetAbi": "10.11.0.0",
+        "targetAbi": "10.11.5.0",
         "sourceUrl": "https://github.com/LoloZarro/Telefin/releases/download/1.0.0.10/Telefin.zip",
         "timestamp": "2025-12-21T12:29:53Z",
         "changelog": "Automated release 1.0.0.10"
