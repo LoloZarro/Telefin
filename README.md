@@ -41,14 +41,16 @@ Telefin is designed to be lightweight, flexible, and easy to configure directly 
 
 ## Features
 
-* Telegram notifications for Jellyfin server events (see: [supported events](https://github.com/LoloZarro/Telefin/wiki/Configuring-Message-Templates-with-Variables#subtitle-download-failure))
-* Per-user configuration
-  * Separate bot configuration per user
-* Event-level control
-  * Enable or disable notifications per event
-* Event-specific message templates
-* Placeholder-based message formatting (see: [variables](https://github.com/LoloZarro/Telefin/wiki/Configuring-Message-Templates-with-Variables))
+* Telegram notifications for Jellyfin server events (see: [supported events](https://github.com/LoloZarro/Telefin/wiki#supported-jellyfin-events))
 * Configuration through the Jellyfin plugin settings interface
+* Per-user configuration
+  * Separate bot configuration for each user
+* Event-level control
+  * Enable or disable notifications for each event
+* Event-specific messages
+  * Each event has it's own message
+* Event-specific variables
+  * Each event has it's own placeholder variables that can be used in the message (see: [variables](https://github.com/LoloZarro/Telefin/wiki/Configuring-Message-Templates-with-Variables))
 
 ## Installation
 
