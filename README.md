@@ -50,7 +50,7 @@ Telefin is designed to be lightweight, flexible, and easy to configure directly 
 * Event-specific messages
   * Each event has it's own message
 * Event-specific variables
-  * Each event has it's own placeholder variables that can be used in the message (see: [variables](https://github.com/LoloZarro/Telefin/wiki/Configuring-Message-Templates-with-Variables))
+  * Each event has it's own placeholder variables that can be used in the message (see: [variables](https://github.com/LoloZarro/Telefin/wiki/Message-Variables))
 
 ## Installation
 
