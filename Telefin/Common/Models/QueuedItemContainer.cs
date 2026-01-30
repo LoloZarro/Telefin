@@ -49,6 +49,5 @@ public sealed class QueuedItemContainer
         {
             ChildItemIds.Remove(child);
         }
-
     }
 }

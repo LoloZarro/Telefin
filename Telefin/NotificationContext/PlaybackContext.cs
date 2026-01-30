@@ -7,7 +7,7 @@ using Telefin.Common.Extensions;
 
 namespace Telefin.NotificationContext
 {
-    internal class PlaybackContext : NotificationContextBase
+    internal sealed class PlaybackContext : NotificationContextBase
     {
         private readonly PlaybackProgressEventArgs _eventArgs;
         private readonly BaseItem _item;

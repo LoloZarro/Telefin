@@ -3,7 +3,7 @@ using MediaBrowser.Controller.Events.Updates;
 
 namespace Telefin.NotificationContext
 {
-    internal class PluginUninstalledContext : NotificationContextBase
+    internal sealed class PluginUninstalledContext : NotificationContextBase
     {
         private readonly PluginUninstalledEventArgs _eventArgs;
 

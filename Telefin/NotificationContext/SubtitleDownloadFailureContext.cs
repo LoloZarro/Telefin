@@ -5,7 +5,7 @@ using Telefin.Common.Extensions;
 
 namespace Telefin.NotificationContext
 {
-    internal class SubtitleDownloadFailureContext : NotificationContextBase
+    internal sealed class SubtitleDownloadFailureContext : NotificationContextBase
     {
         private readonly SubtitleDownloadFailureEventArgs _eventArgs;
         private readonly BaseItem _item;

@@ -3,7 +3,7 @@ using MediaBrowser.Controller.Events.Authentication;
 
 namespace Telefin.NotificationContext
 {
-    internal class AuthenticationRequestContext : NotificationContextBase
+    internal sealed class AuthenticationRequestContext : NotificationContextBase
     {
         private readonly AuthenticationRequestEventArgs _eventArgs;
 

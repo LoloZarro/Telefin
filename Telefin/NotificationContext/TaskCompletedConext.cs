@@ -37,12 +37,12 @@ namespace Telefin.NotificationContext
             data["{durationMinutes}"] = duration?.TotalMinutes.ToString(CultureInfo.InvariantCulture);
 
             // Scheduled Task
-            data["{taskName}"] = task.Name;
-            data["{taskDescription}"] = task.Description;
-            data["{taskCategory}"] = task.Category;
-            data["{taskId}"] = task.Id;
-            data["{taskState}"] = task.State.ToString();
-            data["{taskProgress}"] = task.CurrentProgress?.ToString(CultureInfo.InvariantCulture);
+            data["{taskName}"] = task?.Name;
+            data["{taskDescription}"] = task?.Description;
+            data["{taskCategory}"] = task?.Category;
+            data["{taskId}"] = task?.Id;
+            data["{taskState}"] = task?.State.ToString();
+            data["{taskProgress}"] = task?.CurrentProgress?.ToString(CultureInfo.InvariantCulture);
 
             return data;
         }

@@ -6,7 +6,7 @@ using Telefin.Common.Extensions;
 
 namespace Telefin.NotificationContext
 {
-    internal class LibraryItemAddedContext : NotificationContextBase
+    internal sealed class LibraryItemAddedContext : NotificationContextBase
     {
         private readonly BaseItem _item;
 

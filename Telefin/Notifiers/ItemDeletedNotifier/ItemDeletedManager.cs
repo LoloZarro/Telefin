@@ -110,7 +110,7 @@ public class ItemDeletedManager : IItemDeletedManager
 
         if (!options.Enabled)
         {
-            _logger.LogDebug("Not queueing {ItemName} for notification - library is disabled", item.Name);
+            _logger.LogDebug("Not queueing {ItemName} for notification - library is disabled", item?.Name);
             return;
         }
 

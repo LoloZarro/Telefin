@@ -1,6 +1,6 @@
 ﻿namespace Telefin.Common.Models
 {
-    internal class TelegramResponse
+    internal sealed class TelegramResponse
     {
         public TelegramResponse(bool ok, int? errorCode, string? description)
         {
