@@ -1,16 +1,21 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Telefin.Common.Extensions;
 using Telefin.Common.Models;
 
 namespace Telefin.Helper
 {
     public class TelegramSender
     {
+        private const int MaxMessageLength = 4096;
+        private const int MaxCaptionLength = 1024;
+
         private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
         private readonly HttpClient _httpClient;
@@ -22,18 +27,17 @@ namespace Telefin.Helper
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        //TODO: Both send methods will fail if the message is too long. Telegram has a limit of 4096 characters per message and 1024 for captions.
-
         public async Task<bool> SendMessageAsync(string notificationType, string message, string botToken, string chatId, bool isSilentNotification, string threadId)
         {
             try
             {
                 var endpoint = BuildBotUrl(botToken, "sendMessage");
 
+                var messages = message.SplitMessage(MaxMessageLength).ToArray();
+
                 var parameters = new Dictionary<string, string>
                 {
                     { "chat_id", chatId },
-                    { "text", message ?? string.Empty },
                     { "parse_mode", "HTML" }
                 };
 
@@ -47,7 +51,21 @@ namespace Telefin.Helper
                     parameters.Add("message_thread_id", sanitizedThreadId);
                 }
 
-                return await PostFormAsync(notificationType, endpoint, parameters).ConfigureAwait(false);
+                bool success = false;
+
+                foreach (var msg in messages)
+                {
+                    parameters["text"] = msg;
+
+                    success = await PostFormAsync(notificationType, endpoint, parameters).ConfigureAwait(false);
+                    if (!success)
+                    {
+                        _logger.LogError("{PluginName}({NotificationType}): Error while trying to dispatch Telegram Notification. Full Message:{Message}", Plugin.PluginName, notificationType, message);
+                        break;
+                    }
+                }
+
+                return success;
             }
             catch (ArgumentException ex)
             {
@@ -62,10 +80,12 @@ namespace Telefin.Helper
             {
                 var endpoint = BuildBotUrl(botToken, "sendPhoto");
 
+                var messages = caption.SplitMessage(MaxCaptionLength).ToArray();
+
                 using var form = new MultipartFormDataContent
                 {
                     { new StringContent(chatId, Encoding.UTF8), "chat_id" },
-                    { new StringContent(caption ?? string.Empty, Encoding.UTF8), "caption" },
+                    { new StringContent(messages.FirstOrDefault() ?? string.Empty, Encoding.UTF8), "caption" },
                     { new StringContent("HTML", Encoding.UTF8), "parse_mode" }
                 };
 
@@ -103,7 +123,19 @@ namespace Telefin.Helper
                     return await SendMessageAsync(notificationType, caption ?? string.Empty, botToken, chatId, isSilentNotification, threadId).ConfigureAwait(false);
                 }
 
-                return await PostMultipartAsync(notificationType, endpoint, form).ConfigureAwait(false);
+                var success = await PostMultipartAsync(notificationType, endpoint, form).ConfigureAwait(false);
+                if (!success)
+                {
+                    _logger.LogError("{PluginName}({NotificationType}): Error while trying to dispatch Telegram Notification. Full Message:{Message}", Plugin.PluginName, notificationType, caption);
+                    return false;
+                }
+
+                if (messages.Skip(1).Any())
+                {
+                    success = await SendMessageAsync(notificationType, string.Join(string.Empty, messages.Skip(1)) ?? string.Empty, botToken, chatId, isSilentNotification, threadId).ConfigureAwait(false);
+                }
+
+                return success;
             }
             catch (ArgumentException ex)
             {
