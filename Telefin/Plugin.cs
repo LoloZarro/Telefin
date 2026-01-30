@@ -21,6 +21,8 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
     {
         _logger = logger;
         Instance = this;
+
+        EnsureConfigurationDefaults();
     }
 
     public static ILogger<Plugin> Logger => Instance!._logger;
@@ -45,5 +47,22 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
             Name = $"{Name}.js",
             EmbeddedResourcePath = string.Format(CultureInfo.InvariantCulture, "{0}.Web.configPage.js", GetType().Namespace)
         };
+    }
+
+    private void EnsureConfigurationDefaults()
+    {
+        var cfg = Configuration;
+        var changed = false;
+
+        if (cfg.PlaybackStartDebounceMs < 0 || cfg.PlaybackStartDebounceMs > 60000)
+        {
+            cfg.PlaybackStartDebounceMs = 0;
+            changed = true;
+        }
+
+        if (changed)
+        {
+            SaveConfiguration();
+        }
     }
 }

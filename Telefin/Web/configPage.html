@@ -54,6 +54,25 @@
                             If no scheme is provided, <strong>http</strong> will be used.
                         </div>
                     </div>
+
+                    <div class="inputContainer" style="margin-top:1em;">
+                        <label class="inputLabel inputLabelUnfocused" for="PlaybackStartDebounceMs">
+                            Playback start debounce (milliseconds)
+                        </label>
+                        <input id="PlaybackStartDebounceMs"
+                               name="PlaybackStartDebounceMs"
+                               type="number"
+                               is="emby-input"
+                               min="0"
+                               max="10000"
+                               step="100" />
+                        <div class="fieldDescription">
+                            Prevents duplicate Playback Start notifications within this time window (max. 60s / 0 = disabled).
+                        </div>
+                        <div class="fieldDescription">
+                            Jellyfin may emit multiple Playback Start events for various reasons. For each user Telefin will only notify once per item during this interval.
+                        </div>
+                    </div>
                 </section>
 
                 <!-- Per-user configuration selector -->
