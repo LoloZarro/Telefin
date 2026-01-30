@@ -73,10 +73,8 @@ namespace Telefin.Helper
                     x.MediaType != MediaType.Episode)
                 .ToArray();
 
-            // Fast lookups
             var seriesById = series.ToDictionary(x => x.ItemId);
             var seasonById = seasons.ToDictionary(x => x.ItemId);
-
 
             // Seasons
 

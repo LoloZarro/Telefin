@@ -76,11 +76,11 @@ namespace Telefin.Helper
                 var itemType = item.GetType().ToString();
 
                 INotificationContext? context = CreateNotificationTypeContext(notificationType, subtype, item);
-                //if (context == null)
-                //{
-                //    _logger.LogWarning("{PluginName}: Unable to dispatch notification for {ItemName} there is no corresponding NotificationTypeContext.", Plugin.PluginName, (string)itemType);
-                //    return;
-                //}
+                // if (context == null)
+                // {
+                //     _logger.LogWarning("{PluginName}: Unable to dispatch notification for {ItemName} there is no corresponding NotificationTypeContext.", Plugin.PluginName, (string)itemType);
+                //     return;
+                // }
 
                 var data = context?.GetTemplateData();
                 message = PlaceholderReplacer.Resolve(message, data);

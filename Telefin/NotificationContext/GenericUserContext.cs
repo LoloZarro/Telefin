@@ -6,7 +6,7 @@ using Jellyfin.Database.Implementations.Entities;
 
 namespace Telefin.NotificationContext
 {
-    internal class GenericUserContext : NotificationContextBase
+    internal sealed class GenericUserContext : NotificationContextBase
     {
         private readonly User? _user;
 

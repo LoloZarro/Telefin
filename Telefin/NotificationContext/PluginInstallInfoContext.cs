@@ -4,7 +4,7 @@ using MediaBrowser.Model.Updates;
 
 namespace Telefin.NotificationContext
 {
-    internal class PluginInstallInfoContext : NotificationContextBase
+    internal sealed class PluginInstallInfoContext : NotificationContextBase
     {
         private readonly GenericEventArgs<InstallationInfo> _eventArgs;
 

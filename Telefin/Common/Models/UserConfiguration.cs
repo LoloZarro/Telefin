@@ -3,6 +3,8 @@ using Telefin.Common.Models;
 
 namespace Telefin.Configuration;
 
+#pragma warning disable SA1516 // Elements should be separated by blank line
+
 public class UserConfiguration
 {
     public string UserId { get; set; } = string.Empty;
@@ -140,3 +142,5 @@ public class UserConfiguration
     public bool UserDataSaved { get; set; }
     public string UserDataSavedStringMessage { get; set; } = DefaultMessages.UserDataSaved;
 }
+
+#pragma warning restore SA1516 // Elements should be separated by blank line

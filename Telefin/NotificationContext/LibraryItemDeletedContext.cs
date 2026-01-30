@@ -6,7 +6,7 @@ using Telefin.Common.Extensions;
 
 namespace Telefin.NotificationContext
 {
-    internal class LibraryItemDeletedContext : NotificationContextBase
+    internal sealed class LibraryItemDeletedContext : NotificationContextBase
     {
         private readonly BaseItem _item;
 

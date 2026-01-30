@@ -3,7 +3,7 @@ using MediaBrowser.Common.Updates;
 
 namespace Telefin.NotificationContext
 {
-    internal class PluginInstallationFailedContext : NotificationContextBase
+    internal sealed class PluginInstallationFailedContext : NotificationContextBase
     {
         private readonly InstallationFailedEventArgs _eventArgs;
 
