@@ -52,6 +52,22 @@ Telefin is designed to be lightweight, flexible, and easy to configure directly 
 * Event-specific variables
   * Each event has it's own placeholder variables that can be used in the message (see: [variables](https://github.com/LoloZarro/Telefin/wiki/Message-Variables))
 
+## Screenshots
+<div style="display:flex; gap:15px; align-items:flex-start;">
+  <img
+    alt="Configuration"
+    src="https://github.com/user-attachments/assets/420262d4-918d-4bb4-a94c-16b1b7413a8d"
+    style="height:600px; width:auto;"/>
+  <img
+    alt="Series"
+    src="https://github.com/user-attachments/assets/9a0778c6-80e2-4848-96c0-301d0dff4040"
+    style="height:600px; width:auto;"/>
+  <img
+    alt="Movie"
+    src="https://github.com/user-attachments/assets/12526ed9-5c2b-4d42-8fa8-d38ab0e4ea06"
+    style="height:600px; width:auto;"/>
+</div>
+
 ## Installation
 
 The installation guide can be found [here](https://github.com/LoloZarro/Telefin/wiki/Installation).
