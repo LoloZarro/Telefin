@@ -54,6 +54,12 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
         var cfg = Configuration;
         var changed = false;
 
+        if (cfg.MetadataWaitMultiplier < 1 || cfg.MetadataWaitMultiplier > 100)
+        {
+            cfg.MetadataWaitMultiplier = 10;
+            changed = true;
+        }
+
         if (cfg.PlaybackStartDebounceMs < 0 || cfg.PlaybackStartDebounceMs > 60000)
         {
             cfg.PlaybackStartDebounceMs = 0;

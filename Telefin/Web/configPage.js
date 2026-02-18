@@ -327,9 +327,11 @@ export default function (view) {
                 document.querySelector('#EnablePlugin').checked = config.EnablePlugin;
                 document.querySelector('#ServerUrl').value = config.ServerUrl;
 
+                const mw = parseInt(config.MetadataWaitMultiplier ?? 1, 10);
+                document.querySelector('#MetadataWaitMultiplier').value = Number.isFinite(mw) ? Math.min(100, Math.max(1, mw)) : 1;
+
                 const debounceMs = parseInt(config.PlaybackStartDebounceMs ?? 0, 10);
-                document.querySelector('#PlaybackStartDebounceMs').value =
-                    Number.isFinite(debounceMs) ? Math.min(60000, Math.max(0, debounceMs)) : 0;
+                document.querySelector('#PlaybackStartDebounceMs').value = Number.isFinite(debounceMs) ? Math.min(60000, Math.max(0, debounceMs)) : 0;
 
                 const userConfig = config.UserConfigurations.find(x => x.UserId === TelefinConfig.users.getSelectedUserId());
                 if (userConfig) {
@@ -340,7 +342,6 @@ export default function (view) {
                     document.querySelector('#DoNotMentionOwnActivities').checked = userConfig.DoNotMentionOwnActivities;
                     TelefinConfig.notificationType.loadNotificationTypes(userConfig);
                 } else {
-                    document.querySelector('#ServerUrl').value = config.ServerUrl;
                     document.querySelector('#BotToken').value = '';
                     TelefinConfig.configuredChats.setAll([]);
                     document.querySelector('#EnableUser').checked = false;
@@ -362,9 +363,11 @@ export default function (view) {
                     config.EnablePlugin = document.querySelector('#EnablePlugin').checked;
                     config.ServerUrl = document.querySelector('#ServerUrl').value;
 
+                    const mw = parseInt(document.querySelector('#MetadataWaitMultiplier').value ?? '1', 10);
+                    config.MetadataWaitMultiplier = Number.isFinite(mw) ? Math.min(100, Math.max(1, mw)) : 1;
+
                     const debounceMs = parseInt(document.querySelector('#PlaybackStartDebounceMs').value ?? '0', 10);
-                    config.PlaybackStartDebounceMs =
-                        Number.isFinite(debounceMs) ? Math.min(60000, Math.max(0, debounceMs)) : 0;
+                    config.PlaybackStartDebounceMs = Number.isFinite(debounceMs) ? Math.min(60000, Math.max(0, debounceMs)) : 0;
 
                     const userConfig = config.UserConfigurations.find(x => x.UserId === TelefinConfig.users.getSelectedUserId());
                     if (userConfig) {
@@ -375,7 +378,6 @@ export default function (view) {
                         userConfig.DoNotMentionOwnActivities = document.querySelector('#DoNotMentionOwnActivities').checked;
                         TelefinConfig.notificationType.saveNotificationTypes(userConfig);
                     } else {
-                        config.ServerUrl = document.querySelector('#ServerUrl').value;
                         config.UserConfigurations.push({
                             UserId: TelefinConfig.users.getSelectedUserId(),
                             UserName: document.querySelector('#userToConfigure').selectedOptions[0].text,
