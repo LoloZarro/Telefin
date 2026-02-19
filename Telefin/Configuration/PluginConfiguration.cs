@@ -16,6 +16,7 @@ public class PluginConfiguration : BasePluginConfiguration
 
         ServerUrl = "http://localhost:8096";
         EnablePlugin = true;
+        SuppressMovedMediaNotifications = false;
         UserConfigurations = Array.Empty<UserConfiguration>();
     }
 
@@ -34,6 +35,8 @@ public class PluginConfiguration : BasePluginConfiguration
         get => _playbackStartDebounceMs;
         set => _playbackStartDebounceMs = Math.Clamp(value, 0, 60000);
     }
+
+    public bool SuppressMovedMediaNotifications { get; set; }
 
     public UserConfiguration[] UserConfigurations { get; set; }
 }
