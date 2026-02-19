@@ -18,6 +18,7 @@ public class PluginConfiguration : BasePluginConfiguration
         EnablePlugin = true;
         MaintenanceStartStringMessage = DefaultMessages.MaintenanceStart;
         MaintenanceEndStringMessage = DefaultMessages.MaintenanceEnd;
+        SuppressMovedMediaNotifications = false;
         UserConfigurations = Array.Empty<UserConfiguration>();
     }
 
@@ -40,6 +41,8 @@ public class PluginConfiguration : BasePluginConfiguration
         get => _playbackStartDebounceMs;
         set => _playbackStartDebounceMs = Math.Clamp(value, 0, 60000);
     }
+
+    public bool SuppressMovedMediaNotifications { get; set; }
 
     public UserConfiguration[] UserConfigurations { get; set; }
 }

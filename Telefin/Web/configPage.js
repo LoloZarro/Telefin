@@ -340,6 +340,8 @@ export default function (view) {
                     ?? TelefinConfig.notificationType.defaultMessages.MaintenanceEnd
                     ?? '';
 
+                document.querySelector('#SuppressMovedMediaNotifications').checked = !!config.SuppressMovedMediaNotifications;
+
                 const userConfig = config.UserConfigurations.find(x => x.UserId === TelefinConfig.users.getSelectedUserId());
                 if (userConfig) {
                     document.querySelector('#BotToken').value = userConfig.BotToken;
@@ -378,6 +380,8 @@ export default function (view) {
 
                     config.MaintenanceStartStringMessage = document.querySelector('#MaintenanceStartMessage').value ?? '';
                     config.MaintenanceEndStringMessage = document.querySelector('#MaintenanceEndMessage').value ?? '';
+
+                    config.SuppressMovedMediaNotifications = document.querySelector('#SuppressMovedMediaNotifications').checked;
 
                     const userConfig = config.UserConfigurations.find(x => x.UserId === TelefinConfig.users.getSelectedUserId());
                     if (userConfig) {
