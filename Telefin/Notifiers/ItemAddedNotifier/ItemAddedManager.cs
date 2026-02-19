@@ -18,7 +18,6 @@ namespace Telefin.Notifiers.ItemAddedNotifier;
 
 public class ItemAddedManager : IItemAddedManager
 {
-    private const int MaxRetries = 10;
     private const NotificationType TypeOfNotification = NotificationType.ItemAdded;
 
     private readonly ILogger<ItemAddedManager> _logger;
@@ -36,6 +35,8 @@ public class ItemAddedManager : IItemAddedManager
         _applicationHost = applicationHost;
         _itemProcessQueue = new ConcurrentDictionary<Guid, QueuedItemContainer>();
     }
+
+    private static int MaxRetries => ConfigurationHelper.GetMetadataWaitMultiplier();
 
     public async Task ProcessItemsAsync()
     {

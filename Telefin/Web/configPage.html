@@ -56,6 +56,27 @@
                     </div>
 
                     <div class="inputContainer" style="margin-top:1em;">
+                        <label class="inputLabel inputLabelUnfocused" for="MetadataWaitMultiplier">
+                            Metadata wait multiplier
+                        </label>
+                        <input id="MetadataWaitMultiplier"
+                               name="MetadataWaitMultiplier"
+                               type="number"
+                               is="emby-input"
+                               min="1"
+                               max="100"
+                               step="1" />
+                        <div class="fieldDescription">
+                            Number of times Telefin will wait for metadata to be populated before giving up (max. 100).
+                        </div>
+                        <div class="fieldDescription">
+                            Telefin will wait this number multiplied by the interval of the scheduled task
+                            <strong>"Added items notifier"</strong>. If metadata is still missing after this,
+                            the item will be removed from the queue without being processed.
+                        </div>
+                    </div>
+
+                    <div class="inputContainer" style="margin-top:1em;">
                         <label class="inputLabel inputLabelUnfocused" for="PlaybackStartDebounceMs">
                             Playback start debounce (milliseconds)
                         </label>
@@ -64,7 +85,7 @@
                                type="number"
                                is="emby-input"
                                min="0"
-                               max="10000"
+                               max="60000"
                                step="100" />
                         <div class="fieldDescription">
                             Prevents duplicate Playback Start notifications within this time window (max. 60s / 0 = disabled).

@@ -24,7 +24,7 @@ namespace Telefin.Helper
 
         public async Task DispatchNotificationsAsync(NotificationType notificationType, dynamic item, string userId = "", string subtype = "")
         {
-            if (!Plugin.Config.EnablePlugin)
+            if (!ConfigurationHelper.GetEnablePlugin())
             {
                 return;
             }
