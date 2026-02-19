@@ -1,9 +1,12 @@
+using System;
+using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Library;
 using Microsoft.Extensions.Logging;
 using Telefin.Common.Enums;
 using Telefin.Common.Extensions;
+using Telefin.Common.Models;
 using Telefin.Helper;
 using Telefin.Notifiers.ItemAddedNotifier;
 
@@ -16,11 +19,15 @@ public class PlaybackStartNotifier : IEventConsumer<PlaybackStartEventArgs>
     private readonly ILogger<ItemAddedManager> _logger;
     private readonly NotificationDispatcher _notificationDispatcher;
 
+    private static readonly ConcurrentDictionary<Guid, LastPlayedItem> LastPlayedItemByUser = new();
+
     public PlaybackStartNotifier(ILogger<ItemAddedManager> logger, NotificationDispatcher notificationFilter)
     {
         _logger = logger;
         _notificationDispatcher = notificationFilter;
     }
+
+    private static int DebounceMs => ConfigurationHelper.PlaybackStartDebounceMs();
 
     public async Task OnEvent(PlaybackStartEventArgs eventArgs)
     {
@@ -36,8 +43,31 @@ public class PlaybackStartNotifier : IEventConsumer<PlaybackStartEventArgs>
             return;
         }
 
-        string userId = eventArgs.Users[0].Id.ToString();
+        var userId = eventArgs.Users[0].Id;
+        var itemId = eventArgs.Item.Id;
 
-        await _notificationDispatcher.DispatchNotificationsAsync(TypeOfNotification, eventArgs, userId: userId, subtype: subType).ConfigureAwait(false);
+        if (DebounceMs > 0 && GetLastPlayed(userId, out var lastPlayedItem) && lastPlayedItem != null && lastPlayedItem.Id == itemId)
+        {
+            if (NowMs() - lastPlayedItem.Timestamp <= DebounceMs)
+            {
+                return;
+            }
+        }
+
+        SetLastPlayed(userId, itemId);
+
+        await _notificationDispatcher.DispatchNotificationsAsync(TypeOfNotification, eventArgs, userId: userId.ToString(), subtype: subType).ConfigureAwait(false);
+    }
+
+    private static long NowMs() => DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
+    private void SetLastPlayed(Guid userId, Guid itemId)
+    {
+        LastPlayedItemByUser[userId] = new LastPlayedItem(itemId, NowMs());
+    }
+
+    private bool GetLastPlayed(Guid userId, out LastPlayedItem? state)
+    {
+        return LastPlayedItemByUser.TryGetValue(userId, out state);
     }
 }

@@ -325,9 +325,14 @@ export default function (view) {
             Dashboard.showLoadingMsg();
             ApiClient.getPluginConfiguration(TelefinConfig.pluginUniqueId).then(function (config) {
                 document.querySelector('#EnablePlugin').checked = config.EnablePlugin;
+                document.querySelector('#ServerUrl').value = config.ServerUrl;
+
+                const debounceMs = parseInt(config.PlaybackStartDebounceMs ?? 0, 10);
+                document.querySelector('#PlaybackStartDebounceMs').value =
+                    Number.isFinite(debounceMs) ? Math.min(60000, Math.max(0, debounceMs)) : 0;
+
                 const userConfig = config.UserConfigurations.find(x => x.UserId === TelefinConfig.users.getSelectedUserId());
                 if (userConfig) {
-                    document.querySelector('#ServerUrl').value = config.ServerUrl;
                     document.querySelector('#BotToken').value = userConfig.BotToken;
                     TelefinConfig.configuredChats.setAll(userConfig.ConfiguredChats);
                     document.querySelector('#EnableUser').checked = userConfig.EnableUser;
@@ -355,9 +360,14 @@ export default function (view) {
                 Dashboard.showLoadingMsg();
                 ApiClient.getPluginConfiguration(TelefinConfig.pluginUniqueId).then(function (config) {
                     config.EnablePlugin = document.querySelector('#EnablePlugin').checked;
+                    config.ServerUrl = document.querySelector('#ServerUrl').value;
+
+                    const debounceMs = parseInt(document.querySelector('#PlaybackStartDebounceMs').value ?? '0', 10);
+                    config.PlaybackStartDebounceMs =
+                        Number.isFinite(debounceMs) ? Math.min(60000, Math.max(0, debounceMs)) : 0;
+
                     const userConfig = config.UserConfigurations.find(x => x.UserId === TelefinConfig.users.getSelectedUserId());
                     if (userConfig) {
-                        config.ServerUrl = document.querySelector('#ServerUrl').value;
                         userConfig.BotToken = document.querySelector('#BotToken').value;
                         userConfig.ConfiguredChats = TelefinConfig.configuredChats.getAll();
                         userConfig.EnableUser = document.querySelector('#EnableUser').checked;

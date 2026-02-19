@@ -15,5 +15,10 @@ namespace Telefin.Helper
 
             return baseUri;
         }
+
+        public static int PlaybackStartDebounceMs()
+        {
+            return Plugin.Instance?.Configuration.PlaybackStartDebounceMs ?? 0;
+        }
     }
 }
