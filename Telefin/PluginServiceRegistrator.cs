@@ -13,6 +13,7 @@ using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Telefin.Helper;
+using Telefin.Helper.Interfaces;
 using Telefin.Notifiers;
 using Telefin.Notifiers.ItemAddedNotifier;
 using Telefin.Notifiers.ItemDeletedNotifier;
@@ -33,12 +34,16 @@ public class PluginServiceRegistrator : IPluginServiceRegistrator
         // Register notification filter.
         serviceCollection.AddScoped<NotificationDispatcher>();
 
+        // Helpers
+        serviceCollection.AddSingleton<IItemQueuesManager, ItemQueuesManager>();
+
         // Library consumers.
-        serviceCollection.AddScoped<IEventConsumer<SubtitleDownloadFailureEventArgs>, SubtitleDownloadFailureNotifier>();
+        serviceCollection.AddSingleton<ILibraryChangedManager, LibraryChangedManager>();
         serviceCollection.AddHostedService<ItemAddedNotifierEntryPoint>();
         serviceCollection.AddSingleton<IItemAddedManager, ItemAddedManager>();
         serviceCollection.AddHostedService<ItemDeletedNotifierEntryPoint>();
         serviceCollection.AddSingleton<IItemDeletedManager, ItemDeletedManager>();
+        serviceCollection.AddScoped<IEventConsumer<SubtitleDownloadFailureEventArgs>, SubtitleDownloadFailureNotifier>();
 
         // Security consumers.
         serviceCollection.AddScoped<IEventConsumer<AuthenticationRequestEventArgs>, AuthenticationFailureNotifier>();
