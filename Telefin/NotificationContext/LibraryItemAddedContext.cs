@@ -21,7 +21,7 @@ namespace Telefin.NotificationContext
 
             data["{itemTitle}"] = _item.GetPropertySafely<string?>("Name");
             data["{itemYear}"] = _item.GetPropertySafely<string?>("ProductionYear");
-            data["{itemOverview}"] = _item.GetPropertySafely<string?>("Overview");
+            data["{itemOverview}"] = _item.GetPropertySafely<string?>("Overview")?.Sanitize();
             data["{itemGenres}"] = _item.GetGenres();
             data["{itemDuration}"] = _item.GetDuration();
             data["{seriesTitle}"] = _item.GetSeriesTitle();

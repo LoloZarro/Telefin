@@ -37,5 +37,15 @@ namespace Telefin.Common.Extensions
                 start += length;
             }
         }
+
+        public static string Sanitize(this string text)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                return text;
+            }
+
+            return text.Replace("<br>", "\r\n", StringComparison.OrdinalIgnoreCase);
+        }
     }
 }
