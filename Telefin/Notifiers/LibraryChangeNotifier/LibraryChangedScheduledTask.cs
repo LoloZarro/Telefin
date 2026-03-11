@@ -6,21 +6,22 @@ using MediaBrowser.Model.Tasks;
 
 namespace Telefin.Notifiers.ItemAddedNotifier;
 
-public class ItemAddedScheduledTask : IScheduledTask, IConfigurableScheduledTask
+public class LibraryChangedScheduledTask : IScheduledTask, IConfigurableScheduledTask
 {
-    private const int RecheckIntervalSec = 60;
-    private readonly IItemAddedManager _itemAddedManager;
+    private const int RecheckIntervalSec = 300
+        ;
+    private readonly ILibraryChangedManager _libraryChangedManager;
 
-    public ItemAddedScheduledTask(IItemAddedManager itemAddedManager)
+    public LibraryChangedScheduledTask(ILibraryChangedManager itemAddedManager)
     {
-        _itemAddedManager = itemAddedManager;
+        _libraryChangedManager = itemAddedManager;
     }
 
-    public string Name => "Added items notifier";
+    public string Name => "Library changed notifier";
 
-    public string Key => "Telefin";
+    public string Key => "LibraryChangeNotifier";
 
-    public string Description => "Processes all items added to the queue of items that have been added to the server since the last run, including items still pending, and notifies all configured users subscribed to the relevant events(Episode, Season, etc.)";
+    public string Description => "Processes all items that have been added or deleted to the server since the last run and notifies all configured users subscribed to the relevant events(Episode, Season, etc.)";
 
     public string Category => "Telefin";
 
@@ -32,7 +33,7 @@ public class ItemAddedScheduledTask : IScheduledTask, IConfigurableScheduledTask
 
     public Task ExecuteAsync(IProgress<double> progress, CancellationToken cancellationToken)
     {
-        return _itemAddedManager.ProcessItemsAsync();
+        return _libraryChangedManager.ProcessItemsAsync();
     }
 
     public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()

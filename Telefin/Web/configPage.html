@@ -94,6 +94,21 @@
                             Jellyfin may emit multiple Playback Start events for various reasons. For each user Telefin will only notify once per item during this interval.
                         </div>
                     </div>
+
+                    <div class="checkboxContainer checkboxContainer-withDescription" style="margin-top:1em;">
+                        <label class="emby-checkbox-label">
+                            <input id="SuppressMovedMediaNotifications"
+                                   name="SuppressMovedMediaNotifications"
+                                   type="checkbox"
+                                   is="emby-checkbox" />
+                            <span>Suppress notifications for moved media (EXPERIMENTAL)</span>
+                        </label>
+                        <div class="fieldDescription">
+                            When enabled, Telefin attempts to detect when media items are moved (deleted + added for the same item)
+                            and will remove the metached items from queues so no notifications are sent out. This could result in false
+                            positives.
+                        </div>
+                    </div>
                 </section>
 
                 <!-- Per-user configuration selector -->

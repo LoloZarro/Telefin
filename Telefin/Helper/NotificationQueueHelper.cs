@@ -33,6 +33,89 @@ namespace Telefin.Helper
             return new QueuedItemContainer(item, mediaSubType);
         }
 
+        public static int IsSameItem(BaseItem? a, BaseItem? b)
+        {
+            int score = 0;
+
+            if (a == null && b == null)
+            {
+                return score;
+            }
+
+            // Metadata providers
+            foreach (var (key, valueA) in a?.ProviderIds ?? [])
+            {
+                if (string.IsNullOrWhiteSpace(valueA))
+                {
+                    continue;
+                }
+
+                if (b?.ProviderIds.TryGetValue(key, out var valueB) ?? false &&
+                    string.Equals(valueA, valueB, StringComparison.OrdinalIgnoreCase))
+                {
+                    score += 10;
+                }
+            }
+
+            // Presentation Key
+            if (!string.IsNullOrWhiteSpace(a?.PresentationUniqueKey) &&
+                !string.IsNullOrWhiteSpace(b?.PresentationUniqueKey) &&
+                string.Equals(a?.GetPresentationUniqueKey(), b?.GetPresentationUniqueKey(), StringComparison.OrdinalIgnoreCase))
+            {
+                score += 8;
+            }
+
+            // Name
+            if (string.Equals(a?.Name, b?.Name, StringComparison.OrdinalIgnoreCase))
+            {
+                score += 3;
+            }
+
+            // Year
+            if ((a?.ProductionYear.HasValue ?? false) &&
+                (b?.ProductionYear.HasValue ?? false) &&
+                a?.ProductionYear == b?.ProductionYear)
+            {
+                score += 2;
+            }
+
+            // Runtime (3 minutes tolerance)
+            if ((a?.RunTimeTicks.HasValue ?? false) && (b?.RunTimeTicks.HasValue ?? false))
+            {
+                var diffTicks = Math.Abs(a.RunTimeTicks.Value - b.RunTimeTicks.Value);
+                var diffMinutes = diffTicks / TimeSpan.TicksPerMinute;
+                if (diffMinutes <= 3)
+                {
+                    score += 2;
+                }
+            }
+
+            // Premiere date
+            if ((a?.PremiereDate.HasValue ?? false) &&
+                (b?.PremiereDate.HasValue ?? false) &&
+                a.PremiereDate.Value.Date == b.PremiereDate.Value.Date)
+            {
+                score += 1;
+            }
+
+            // Index (for Episodes or Seasons)
+            if ((a?.IndexNumber.HasValue ?? false) &&
+                (b?.IndexNumber.HasValue ?? false) &&
+                a.IndexNumber == b.IndexNumber)
+            {
+                score += 2;
+            }
+
+            if ((a?.ParentIndexNumber.HasValue ?? false) &&
+                (b?.ParentIndexNumber.HasValue ?? false) &&
+                a.ParentIndexNumber == b.ParentIndexNumber)
+            {
+                score += 2;
+            }
+
+            return score;
+        }
+
         /// <summary>
         /// Evaluates the current notification queue and determines the optimal set of
         /// items to notify about. The method analyzes queued items by media type and
@@ -56,7 +139,7 @@ namespace Telefin.Helper
         /// <returns>
         /// A list of finalized notification candidates ready for dispatch.
         /// </returns>
-        public static List<QueuedItemContainer> EvaluateNotificationCandidates(KeyValuePair<Guid, QueuedItemContainer>[] queue)
+        public static List<QueuedItemContainer> EvaluateNotificationAddedCandidates(KeyValuePair<Guid, QueuedItemContainer>[] queue)
         {
             var items = queue?.Select(x => x.Value).Where(x => x is not null).ToArray() ?? []; // We only need the containers from here on
 

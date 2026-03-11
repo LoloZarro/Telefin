@@ -333,6 +333,8 @@ export default function (view) {
                 const debounceMs = parseInt(config.PlaybackStartDebounceMs ?? 0, 10);
                 document.querySelector('#PlaybackStartDebounceMs').value = Number.isFinite(debounceMs) ? Math.min(60000, Math.max(0, debounceMs)) : 0;
 
+                document.querySelector('#SuppressMovedMediaNotifications').checked = !!config.SuppressMovedMediaNotifications;
+
                 const userConfig = config.UserConfigurations.find(x => x.UserId === TelefinConfig.users.getSelectedUserId());
                 if (userConfig) {
                     document.querySelector('#BotToken').value = userConfig.BotToken;
@@ -368,6 +370,8 @@ export default function (view) {
 
                     const debounceMs = parseInt(document.querySelector('#PlaybackStartDebounceMs').value ?? '0', 10);
                     config.PlaybackStartDebounceMs = Number.isFinite(debounceMs) ? Math.min(60000, Math.max(0, debounceMs)) : 0;
+
+                    config.SuppressMovedMediaNotifications = document.querySelector('#SuppressMovedMediaNotifications').checked;
 
                     const userConfig = config.UserConfigurations.find(x => x.UserId === TelefinConfig.users.getSelectedUserId());
                     if (userConfig) {

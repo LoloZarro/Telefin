@@ -30,5 +30,10 @@ namespace Telefin.Helper
         {
             return Plugin.Instance?.Configuration.PlaybackStartDebounceMs ?? 0;
         }
+
+        public static bool SuppressMovedMediaNotifications()
+        {
+            return Plugin.Instance?.Configuration.SuppressMovedMediaNotifications ?? false;
+        }
     }
 }
