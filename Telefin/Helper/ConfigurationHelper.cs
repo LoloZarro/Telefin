@@ -21,12 +21,22 @@ namespace Telefin.Helper
             return baseUri;
         }
 
+        public static string GetMaintenanceStartMessage()
+        {
+            return Plugin.Config.MaintenanceStartStringMessage ?? string.Empty;
+        }
+
+        public static string GetMaintenanceEndMessage()
+        {
+            return Plugin.Config.MaintenanceEndStringMessage ?? string.Empty;
+        }
+
         public static int GetMetadataWaitMultiplier()
         {
             return Plugin.Instance?.Configuration.MetadataWaitMultiplier ?? 10;
         }
 
-        public static int PlaybackStartDebounceMs()
+        public static int GetPlaybackStartDebounceMs()
         {
             return Plugin.Instance?.Configuration.PlaybackStartDebounceMs ?? 0;
         }

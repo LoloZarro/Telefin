@@ -333,6 +333,13 @@ export default function (view) {
                 const debounceMs = parseInt(config.PlaybackStartDebounceMs ?? 0, 10);
                 document.querySelector('#PlaybackStartDebounceMs').value = Number.isFinite(debounceMs) ? Math.min(60000, Math.max(0, debounceMs)) : 0;
 
+                document.querySelector('#MaintenanceStartMessage').value = config.MaintenanceStartStringMessage
+                    ?? TelefinConfig.notificationType.defaultMessages.MaintenanceStart
+                    ?? '';
+                document.querySelector('#MaintenanceEndMessage').value = config.MaintenanceEndStringMessage
+                    ?? TelefinConfig.notificationType.defaultMessages.MaintenanceEnd
+                    ?? '';
+
                 const userConfig = config.UserConfigurations.find(x => x.UserId === TelefinConfig.users.getSelectedUserId());
                 if (userConfig) {
                     document.querySelector('#BotToken').value = userConfig.BotToken;
@@ -368,6 +375,9 @@ export default function (view) {
 
                     const debounceMs = parseInt(document.querySelector('#PlaybackStartDebounceMs').value ?? '0', 10);
                     config.PlaybackStartDebounceMs = Number.isFinite(debounceMs) ? Math.min(60000, Math.max(0, debounceMs)) : 0;
+
+                    config.MaintenanceStartStringMessage = document.querySelector('#MaintenanceStartMessage').value ?? '';
+                    config.MaintenanceEndStringMessage = document.querySelector('#MaintenanceEndMessage').value ?? '';
 
                     const userConfig = config.UserConfigurations.find(x => x.UserId === TelefinConfig.users.getSelectedUserId());
                     if (userConfig) {

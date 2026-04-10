@@ -24,6 +24,8 @@
         UserLockedOut,
         UserPasswordChanged,
         UserUpdated,
-        UserDataSaved
+        UserDataSaved,
+        MaintenanceStart,
+        MaintenanceEnd
     }
 }

@@ -81,6 +81,16 @@ namespace Telefin.Configuration
         public static string PendingRestart { get; } =
             "🔄 Jellyfin is pending a restart.";
 
+        // MAINTENANCE
+
+        public static string MaintenanceStart { get; } =
+            "🛠️ Maintenance is starting.\n" +
+            "The Jellyfin server may be temporarily unavailable.";
+
+        public static string MaintenanceEnd { get; } =
+            "✅ Maintenance is complete.\n" +
+            "The Jellyfin server is back online.";
+
         // PLAYBACK: PROGRESS
 
         public static string PlaybackProgressMovies { get; } =

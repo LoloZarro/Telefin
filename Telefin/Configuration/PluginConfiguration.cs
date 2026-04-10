@@ -16,12 +16,18 @@ public class PluginConfiguration : BasePluginConfiguration
 
         ServerUrl = "http://localhost:8096";
         EnablePlugin = true;
+        MaintenanceStartStringMessage = DefaultMessages.MaintenanceStart;
+        MaintenanceEndStringMessage = DefaultMessages.MaintenanceEnd;
         UserConfigurations = Array.Empty<UserConfiguration>();
     }
 
     public string ServerUrl { get; set; }
 
     public bool EnablePlugin { get; set; }
+
+    public string MaintenanceStartStringMessage { get; set; }
+
+    public string MaintenanceEndStringMessage { get; set; }
 
     public int MetadataWaitMultiplier
     {

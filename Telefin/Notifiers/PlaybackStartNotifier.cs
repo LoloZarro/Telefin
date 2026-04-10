@@ -27,7 +27,7 @@ public class PlaybackStartNotifier : IEventConsumer<PlaybackStartEventArgs>
         _notificationDispatcher = notificationFilter;
     }
 
-    private static int DebounceMs => ConfigurationHelper.PlaybackStartDebounceMs();
+    private static int DebounceMs => ConfigurationHelper.GetPlaybackStartDebounceMs();
 
     public async Task OnEvent(PlaybackStartEventArgs eventArgs)
     {
