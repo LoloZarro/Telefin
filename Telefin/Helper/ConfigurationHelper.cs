@@ -26,7 +26,7 @@ namespace Telefin.Helper
             return Plugin.Instance?.Configuration.MetadataWaitMultiplier ?? 10;
         }
 
-        public static int PlaybackStartDebounceMs()
+        public static int GetPlaybackStartDebounceMs()
         {
             return Plugin.Instance?.Configuration.PlaybackStartDebounceMs ?? 0;
         }
