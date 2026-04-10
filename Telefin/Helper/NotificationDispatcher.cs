@@ -118,7 +118,64 @@ namespace Telefin.Helper
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError("{PluginName}: An error occurred while sending a Telegram for user '{UserName}' in chat '{ChatId}' message: {ExceptionMessage}", Plugin.PluginName, userConfiguration.UserName, chat.ChatId, ex.Message);
+                        _logger.LogError(
+                            "{PluginName}({NotificationType}): An error occurred while sending a Telegram message for user '{UserName}' in chat '{ChatId}' message: {ExceptionMessage}",
+                            Plugin.PluginName,
+                            string.IsNullOrWhiteSpace(subtype) ? notificationType.ToString() : subtype,
+                            userConfiguration.UserName,
+                            chat.ChatId,
+                            ex.Message);
+                    }
+                }
+            }
+
+            await Task.WhenAll(tasks).ConfigureAwait(false);
+        }
+
+        public async Task DispatchGlobalNotificationAsync(NotificationType notificationType, string? message)
+        {
+            if (!ConfigurationHelper.GetEnablePlugin())
+            {
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                _logger.LogWarning("{PluginName}({NotificationType}): Unable to dispatch notification as the message is empty.", Plugin.PluginName, notificationType);
+                return;
+            }
+
+            var userConfigurations = Plugin.Config.UserConfigurations;
+            var tasks = new List<Task>();
+
+            foreach (var userConfiguration in userConfigurations)
+            {
+                if (!userConfiguration.EnableUser || string.IsNullOrWhiteSpace(userConfiguration.BotToken))
+                {
+                    continue;
+                }
+
+                var configuredChats = userConfiguration.ConfiguredChats.Where(c => !string.IsNullOrWhiteSpace(c.ChatId?.Trim()));
+
+                foreach (var chat in configuredChats)
+                {
+                    try
+                    {
+                        var chatId = chat.ChatId.Trim();
+                        var threadId = string.IsNullOrWhiteSpace(chat.ThreadId) ? string.Empty : chat.ThreadId.Trim();
+
+                        Task task = _sender.SendMessageAsync(notificationType.ToString(), message, userConfiguration.BotToken, chatId, userConfiguration.SilentNotification, threadId);
+                        tasks.Add(task);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(
+                            "{PluginName}({NotificationType}): An error occurred while sending a Telegram message for user '{UserName}' in chat '{ChatId}': {ExceptionMessage}",
+                            Plugin.PluginName,
+                            notificationType,
+                            userConfiguration.UserName,
+                            chat.ChatId,
+                            ex.Message);
                     }
                 }
             }
