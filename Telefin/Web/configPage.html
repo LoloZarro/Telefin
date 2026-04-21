@@ -133,7 +133,7 @@
 
                     <div class="inputContainer" style="margin-top:1em;">
                         <label class="inputLabel inputLabelUnfocused" for="MetadataWaitMultiplier">
-                            Metadata wait multiplier
+                            Metadata wait multiplier for added items
                         </label>
                         <input id="MetadataWaitMultiplier"
                                name="MetadataWaitMultiplier"
@@ -147,7 +147,7 @@
                         </div>
                         <div class="fieldDescription">
                             Telefin will wait this number multiplied by the interval of the scheduled task
-                            <strong>"Added items notifier"</strong>. If metadata is still missing after this,
+                            <strong>"Library changed notifier"</strong>. If metadata is still missing after this,
                             the item will be removed from the queue without being processed.
                         </div>
                     </div>
@@ -167,7 +167,7 @@
                             Prevents duplicate Playback Start notifications within this time window (max. 60s / 0 = disabled).
                         </div>
                         <div class="fieldDescription">
-                            Jellyfin may emit multiple Playback Start events for various reasons. For each user Telefin will only notify once per item during this interval.
+                            Jellyfin may emit multiple Playback Start events for various reasons. If configured Telefin will only notify each user once for an item during this interval.
                         </div>
                     </div>
 
@@ -181,7 +181,7 @@
                         </label>
                         <div class="fieldDescription">
                             When enabled, Telefin attempts to detect when media items are moved (deleted + added for the same item)
-                            and will remove the metached items from queues so no notifications are sent out. This could result in false
+                            and will remove the matched items from queues so no notifications are sent out. This could result in false
                             positives.
                         </div>
                     </div>
