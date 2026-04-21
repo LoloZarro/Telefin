@@ -2,7 +2,7 @@
 
 namespace Telefin.Notifiers.ItemAddedNotifier;
 
-public interface IItemAddedManager
+public interface ILibraryChangedManager
 {
-    Task ProcessItemsAsync();
+    public Task ProcessItemsAsync();
 }
